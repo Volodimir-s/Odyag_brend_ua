@@ -12,6 +12,7 @@
     input, select, button { padding: 10px; border-radius: 5px; border: 1px solid #333; background: #2a2a2a; color: #fff; }
     button { background: #24a1de; cursor: pointer; font-weight: bold; border: none; }
     #status { margin-top: 15px; font-weight: bold; }
+    optgroup { background: #1e1e1e; color: #38bdf8; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -28,10 +29,26 @@
       </div>
 
       <div class="field">
-        <label>Категория:</label>
-        <select id="category">
-          <option value="clothes">Одежда</option>
-          <option value="shoes">Обувь</option>
+        <label>Категория и Бренд:</label>
+        <select id="category" required>
+          <optgroup label="Одежда">
+            <option value="clothes-nike">Одежда — Nike</option>
+            <option value="clothes-adidas">Одежда — Adidas</option>
+            <option value="clothes-puma">Одежда — Puma</option>
+            <option value="clothes-stone-island">Одежда — Stone Island</option>
+            <option value="clothes-other">Одежда — Другие бренды</option>
+          </optgroup>
+          <optgroup label="Обувь">
+            <option value="shoes-nike">Обувь — Nike</option>
+            <option value="shoes-adidas">Обувь — Adidas</option>
+            <option value="shoes-puma">Обувь — Puma</option>
+            <option value="shoes-other">Обувь — Другие бренды</option>
+          </optgroup>
+          <optgroup label="Аксессуары">
+            <option value="acc-bags">Сумки / Рюкзаки</option>
+            <option value="acc-caps">Кепки / Шапки</option>
+            <option value="acc-other">Другие аксессуары</option>
+          </optgroup>
         </select>
       </div>
 
@@ -41,22 +58,22 @@
       </div>
 
       <div class="field">
-        <label>1. Размеры (через запятую):</label>
-        <input type="text" id="sizes" required placeholder="S, M, L или 41, 42">
+        <label>Размеры (выберите или введите через запятую):</label>
+        <input type="text" id="sizes" required placeholder="S, M, L, XL или 41, 42, 43">
       </div>
 
       <div class="field">
-        <label>2. Примерный возраст:</label>
+        <label>Примерный возраст:</label>
         <input type="text" id="age_group" placeholder="12-14 лет или Взрослый">
       </div>
 
       <div class="field">
-        <label>3. Страна производитель:</label>
+        <label>Страна производитель:</label>
         <input type="text" id="country" placeholder="Турция">
       </div>
 
       <div class="field">
-        <label>Фотография товара (только одна):</label>
+        <label>Фотография товара:</label>
         <input type="file" id="imageFile" accept="image/*" required>
       </div>
 
@@ -100,8 +117,7 @@
         .getPublicUrl(fileName);
 
       const imageUrl = publicUrlData.publicUrl;
-
-      const sizesArray = document.getElementById('sizes').value.split(',').map(s => s.trim());
+      const sizesArray = document.getElementById('sizes').value.split(',').map(s => s.trim().toUpperCase());
 
       const { error: dbError } = await supabase.from('products').insert([{
         title: document.getElementById('title').value,
