@@ -43,10 +43,10 @@
         .filter-group { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
         .filter-group label { font-size: 0.85rem; font-weight: bold; opacity: 0.9; }
         .filter-group input, .filter-group select { padding: 9px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.9rem; }
-        .price-group { display: flex; gap: 8px; }
-        .price-group input { flex: 1; }
+        
+        /* Цены в столбик */
+        .price-group-col { display: flex; flex-direction: column; gap: 8px; }
 
-        /* Кнопка сброса внутри фильтра */
         .btn-reset { background: #ef4444; color: #fff; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
 
         /* Каталог */
@@ -133,14 +133,14 @@
 
                 <div>
                     <label>Размер:</label>
-                    <input type="text" id="sizeFilter" placeholder="S, M, 42..." oninput="loadProducts()">
+                    <input type="text" id="sizeFilter" placeholder="S, M, L или 41, 42, 43..." oninput="loadProducts()">
                 </div>
 
                 <div>
                     <label>Бюджет (грн):</label>
-                    <div class="price-group">
-                        <input type="number" id="priceFrom" placeholder="От" oninput="loadProducts()">
-                        <input type="number" id="priceTo" placeholder="До" oninput="loadProducts()">
+                    <div class="price-group-col">
+                        <input type="number" id="priceFrom" placeholder="Минимум грн" oninput="loadProducts()">
+                        <input type="number" id="priceTo" placeholder="Максимум грн" oninput="loadProducts()">
                     </div>
                 </div>
 
@@ -285,13 +285,28 @@
             loadProducts();
         }
 
+        // Форматирование вывода размеров под нужный формат
+        function formatSizes(sizes, category, subtype, brand) {
+            if (!sizes || !Array.isArray(sizes) || sizes.length === 0) return 'Н/Д';
+            
+            return sizes.map(s => {
+                const cleanSize = String(s).trim();
+                // Если размер только цифры (например обувь 41, 42, 43)
+                if (/^\d+$/.test(cleanSize)) {
+                    return `${category || 'Товар'}-${brand || 'Бренд'}-${cleanSize}`;
+                } 
+                // Если буквы (S, M, L)
+                return `${category || 'Одежда'}-${subtype || 'Товар'}-${cleanSize.toUpperCase()}`;
+            }).join(', ');
+        }
+
         async function loadProducts() {
             const container = document.getElementById('productsContainer');
             const search = document.getElementById('searchSkutitle').value.toLowerCase().trim();
             const type = document.getElementById('typeFilter').value;
             const subtype = document.getElementById('subtypeFilter').value;
             const brand = document.getElementById('brandFilter').value;
-            const size = document.getElementById('sizeFilter').value.toUpperCase().trim();
+            const sizeInput = document.getElementById('sizeFilter').value.toUpperCase().trim();
             const priceFrom = parseFloat(document.getElementById('priceFrom').value) || 0;
             const priceTo = parseFloat(document.getElementById('priceTo').value) || Infinity;
             const currency = document.getElementById('currencySelect').value;
@@ -311,7 +326,13 @@
                 if (subtype !== 'all' && item.subtype !== subtype) return false;
                 if (brand !== 'all' && item.brand !== brand) return false;
                 if (search && !(item.title.toLowerCase().includes(search) || (item.sku && item.sku.toLowerCase().includes(search)))) return false;
-                if (size && (!item.sizes || !item.sizes.includes(size))) return false;
+                
+                if (sizeInput) {
+                    if (!item.sizes || !Array.isArray(item.sizes)) return false;
+                    const hasSize = item.sizes.some(s => String(s).toUpperCase().includes(sizeInput));
+                    if (!hasSize) return false;
+                }
+
                 if (item.price < priceFrom || item.price > priceTo) return false;
                 return true;
             });
@@ -329,6 +350,7 @@
             container.innerHTML = data.map(item => {
                 const isFav = favorites.includes(item.id);
                 const displayPrice = Math.round((item.price || 0) * rate);
+                const formattedSizes = formatSizes(item.sizes, item.category, item.subtype, item.brand);
 
                 return `
                     <div class="card">
@@ -338,7 +360,7 @@
                             <div class="card-sku">Арт: ${item.sku || 'N/A'}</div>
                             <div class="card-title">${item.title}</div>
                             <div class="card-price">${displayPrice} ${symbol}</div>
-                            <div class="card-info"><b>Размеры:</b> ${item.sizes ? item.sizes.join(', ') : 'Н/Д'}</div>
+                            <div class="card-info"><b>Размеры:</b> ${formattedSizes}</div>
                             <div class="card-info"><b>Бренд:</b> ${item.brand || '—'}</div>
                             <a href="${item.tg_link}" target="_blank" class="btn-buy">${translations[lang].buy}</a>
                         </div>
