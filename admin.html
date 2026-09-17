@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="uk" data-theme="dark">
+<html lang="uk" data-theme="dark" data-lang="uk">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Адмін-панель</title>
+  <title id="pageTitle">Адмін-панель</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* Тёмная тема (по умолчанию) */
     :root {
       --bg-color: #0b1120;
       --card-bg: #1e293b;
@@ -19,7 +18,6 @@
       --input-bg: #0f172a;
     }
 
-    /* Светлая тема */
     [data-theme="light"] {
       --bg-color: #f1f5f9;
       --card-bg: #ffffff;
@@ -51,9 +49,17 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
-    .theme-toggle {
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .control-btn {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
       color: var(--text-color);
@@ -64,11 +70,20 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      transition: background 0.2s;
+      transition: background 0.2s, border-color 0.2s;
     }
 
-    .theme-toggle:hover {
+    .control-btn:hover {
       border-color: var(--accent-color);
+    }
+
+    select.control-btn {
+      appearance: none;
+      padding-right: 28px;
+      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 16px;
     }
 
     .card {
@@ -177,6 +192,7 @@
       border-radius: 8px;
       margin-bottom: 12px;
       transition: background 0.2s, border-color 0.2s;
+      gap: 12px;
     }
 
     .product-info {
@@ -191,6 +207,7 @@
       object-fit: cover;
       border-radius: 6px;
       background-color: var(--border-color);
+      flex-shrink: 0;
     }
 
     .btn-delete {
@@ -202,6 +219,7 @@
       cursor: pointer;
       font-weight: bold;
       transition: opacity 0.2s;
+      flex-shrink: 0;
     }
 
     .btn-delete:hover {
@@ -226,35 +244,43 @@
 
 <div class="container">
   <div class="header-bar">
-    <h1 style="margin:0; font-size: 24px;">Адмін-панель</h1>
-    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌓 Змінити тему</button>
+    <h1 style="margin:0; font-size: 24px;" data-i18n="adminPanel">Адмін-панель</h1>
+    <div class="header-controls">
+      <!-- Перемикач мов зліва від теми -->
+      <select id="langSelect" class="control-btn" onchange="changeLanguage(this.value)">
+        <option value="uk">UA</option>
+        <option value="ru">RU</option>
+        <option value="en">EN</option>
+      </select>
+      <button class="control-btn" onclick="toggleTheme()" id="themeBtn">🌓</button>
+    </div>
   </div>
 
   <div class="card">
-    <h2 style="margin-top:0;">Додати новий товар</h2>
+    <h2 style="margin-top:0;" data-i18n="addProductTitle">Додати новий товар</h2>
     <form id="addForm">
       <div class="form-grid">
         <div class="form-group">
-          <label>Назва товару *</label>
-          <input type="text" id="title" placeholder="наприклад, Кросівки Nike Air Force 1" required>
+          <label data-i18n="labelTitle">Назва товару *</label>
+          <input type="text" id="title" data-i18n-placeholder="placeholderTitle" required>
         </div>
 
         <div class="form-group">
-          <label>Артикул (SKU)</label>
+          <label data-i18n="labelSku">Артикул (SKU)</label>
           <input type="text" id="sku" placeholder="наприклад, NK-1029">
         </div>
 
         <div class="form-group">
-          <label>Категорія *</label>
+          <label data-i18n="labelCategory">Категорія *</label>
           <select id="category" required onchange="updateSizesUI()">
-            <option value="clothes">Одяг</option>
-            <option value="shoes">Взуття</option>
-            <option value="accessories">Аксесуари</option>
+            <option value="clothes" data-i18n="catClothes">Одяг</option>
+            <option value="shoes" data-i18n="catShoes">Взуття</option>
+            <option value="accessories" data-i18n="catAccessories">Аксесуари</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label>Бренд *</label>
+          <label data-i18n="labelBrand">Бренд *</label>
           <select id="brand" required>
             <option value="Nike">Nike</option>
             <option value="Adidas">Adidas</option>
@@ -270,27 +296,27 @@
             <option value="Gucci">Gucci</option>
             <option value="Balenciaga">Balenciaga</option>
             <option value="Zara">Zara</option>
-            <option value="Інше">Інше</option>
+            <option value="Інше" data-i18n="brandOther">Інше</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label>Ціна (грн) *</label>
+          <label data-i18n="labelPrice">Ціна (грн) *</label>
           <input type="number" id="price" placeholder="1500" required>
         </div>
 
         <div class="form-group">
-          <label>Фото з галереї *</label>
+          <label data-i18n="labelImage">Фото з галереї *</label>
           <input type="file" id="imageFile" accept="image/*" required>
         </div>
 
         <div class="form-group full-width">
-          <label>Посилання на покупку в Telegram *</label>
+          <label data-i18n="labelTgLink">Посилання на покупку в Telegram *</label>
           <input type="url" id="tgLink" placeholder="https://t.me/your_manager" required>
         </div>
 
         <div class="form-group full-width">
-          <label>Виберіть доступні розміри *</label>
+          <label data-i18n="labelSizes">Виберіть доступні розміри *</label>
           <div class="sizes-container" id="sizesContainer"></div>
         </div>
       </div>
@@ -300,19 +326,19 @@
   </div>
 
   <div class="card">
-    <h2 style="margin-top:0;">Список товарів в базі (<span id="totalCount">0</span>)</h2>
+    <h2 style="margin-top:0;"><span data-i18n="dbListTitle">Список товарів в базі</span> (<span id="totalCount">0</span>)</h2>
     
     <div class="filter-bar">
-      <input type="text" id="adminSearch" placeholder="Пошук за назвою/артикулом..." oninput="renderAdminList()">
+      <input type="text" id="adminSearch" data-i18n-placeholder="searchPlaceholder" oninput="renderAdminList()">
       <select id="adminCatFilter" onchange="renderAdminList()">
-        <option value="all">Усі категорії</option>
-        <option value="clothes">Одяг</option>
-        <option value="shoes">Взуття</option>
-        <option value="accessories">Аксесуари</option>
+        <option value="all" data-i18n="filterAllCats">Усі категорії</option>
+        <option value="clothes" data-i18n="catClothes">Одяг</option>
+        <option value="shoes" data-i18n="catShoes">Взуття</option>
+        <option value="accessories" data-i18n="catAccessories">Аксесуари</option>
       </select>
       <select id="adminSort" onchange="renderAdminList()">
-        <option value="new">Спочатку нові</option>
-        <option value="old">Спочатку старі</option>
+        <option value="new" data-i18n="sortNew">Спочатку нові</option>
+        <option value="old" data-i18n="sortOld">Спочатку старі</option>
       </select>
     </div>
 
@@ -321,15 +347,152 @@
 </div>
 
 <script>
-  // Логіка перемикання теми
+  // Словник перекладів
+  const translations = {
+    uk: {
+      pageTitle: "Адмін-панель",
+      adminPanel: "Адмін-панель",
+      addProductTitle: "Додати новий товар",
+      labelTitle: "Назва товару *",
+      placeholderTitle: "наприклад, Кросівки Nike Air Force 1",
+      labelSku: "Артикул (SKU)",
+      labelCategory: "Категорія *",
+      catClothes: "Одяг",
+      catShoes: "Взуття",
+      catAccessories: "Аксесуари",
+      labelBrand: "Бренд *",
+      brandOther: "Інше",
+      labelPrice: "Ціна (грн) *",
+      labelImage: "Фото з галереї *",
+      labelTgLink: "Посилання на покупку в Telegram *",
+      labelSizes: "Виберіть доступні розміри *",
+      btnPublish: "Опублікувати товар",
+      btnPublishingImg: "Завантаження картинки...",
+      btnPublishingUpload: "Завантаження зображення...",
+      btnPublishingSave: "Збереження товару...",
+      dbListTitle: "Список товарів в базі",
+      searchPlaceholder: "Пошук за назвою/артикулом...",
+      filterAllCats: "Усі категорії",
+      sortNew: "Спочатку нові",
+      sortOld: "Спочатку старі",
+      loading: "Завантаження...",
+      noProducts: "Немає товарів",
+      deleteBtn: "Видалити",
+      confirmDelete: "Ви дійсно хочете видалити цей товар?",
+      successDelete: "Товар видалено!",
+      successAdd: "Товар успішно додано!",
+      selectImgAlert: "Виберіть зображення!",
+      errLoad: "Помилка завантаження: ",
+      errDelete: "Помилка видалення: "
+    },
+    ru: {
+      pageTitle: "Админ-панель",
+      adminPanel: "Админ-панель",
+      addProductTitle: "Добавить новый товар",
+      labelTitle: "Название товара *",
+      placeholderTitle: "например, Кроссовки Nike Air Force 1",
+      labelSku: "Артикул (SKU)",
+      labelCategory: "Категория *",
+      catClothes: "Одежда",
+      catShoes: "Обувь",
+      catAccessories: "Аксессуары",
+      labelBrand: "Бренд *",
+      brandOther: "Другое",
+      labelPrice: "Цена (грн) *",
+      labelImage: "Фото из галереи *",
+      labelTgLink: "Ссылка на покупку в Telegram *",
+      labelSizes: "Выберите доступные размеры *",
+      btnPublish: "Опубликовать товар",
+      btnPublishingImg: "Загрузка картинки...",
+      btnPublishingUpload: "Загрузка изображения...",
+      btnPublishingSave: "Сохранение товара...",
+      dbListTitle: "Список товаров в базе",
+      searchPlaceholder: "Поиск по названию/артикулу...",
+      filterAllCats: "Все категории",
+      sortNew: "Сначала новые",
+      sortOld: "Сначала старые",
+      loading: "Загрузка...",
+      noProducts: "Нет товаров",
+      deleteBtn: "Удалить",
+      confirmDelete: "Вы действительно хотите удалить этот товар?",
+      successDelete: "Товар удален!",
+      successAdd: "Товар успешно добавлен!",
+      selectImgAlert: "Выберите изображение!",
+      errLoad: "Ошибка загрузки: ",
+      errDelete: "Ошибка удаления: "
+    },
+    en: {
+      pageTitle: "Admin Panel",
+      adminPanel: "Admin Panel",
+      addProductTitle: "Add New Product",
+      labelTitle: "Product Name *",
+      placeholderTitle: "e.g., Nike Air Force 1 Sneakers",
+      labelSku: "SKU",
+      labelCategory: "Category *",
+      catClothes: "Clothes",
+      catShoes: "Shoes",
+      catAccessories: "Accessories",
+      labelBrand: "Brand *",
+      brandOther: "Other",
+      labelPrice: "Price (UAH) *",
+      labelImage: "Image from Gallery *",
+      labelTgLink: "Telegram Purchase Link *",
+      labelSizes: "Select Available Sizes *",
+      btnPublish: "Publish Product",
+      btnPublishingImg: "Uploading image...",
+      btnPublishingUpload: "Uploading image file...",
+      btnPublishingSave: "Saving product...",
+      dbListTitle: "Products in Database",
+      searchPlaceholder: "Search by name/SKU...",
+      filterAllCats: "All Categories",
+      sortNew: "Newest First",
+      sortOld: "Oldest First",
+      loading: "Loading...",
+      noProducts: "No products found",
+      deleteBtn: "Delete",
+      confirmDelete: "Are you sure you want to delete this product?",
+      successDelete: "Product deleted!",
+      successAdd: "Product successfully added!",
+      selectImgAlert: "Please select an image!",
+      errLoad: "Load error: ",
+      errDelete: "Delete error: "
+    }
+  };
+
+  // Ініціалізація теми та мови
   const savedTheme = localStorage.getItem('admin_theme') || 'dark';
   document.documentElement.setAttribute('data-theme', savedTheme);
+
+  const savedLang = localStorage.getItem('admin_lang') || 'uk';
+  document.documentElement.setAttribute('data-lang', savedLang);
+  document.getElementById('langSelect').value = savedLang;
 
   function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('admin_theme', newTheme);
+  }
+
+  function changeLanguage(lang) {
+    document.documentElement.setAttribute('data-lang', lang);
+    localStorage.setItem('admin_lang', lang);
+    applyTranslations(lang);
+    renderAdminList();
+  }
+
+  function applyTranslations(lang) {
+    const t = translations[lang];
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (t[key]) el.innerText = t[key];
+    });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (t[key]) el.placeholder = t[key];
+    });
+    document.getElementById('pageTitle').innerText = t.pageTitle;
+    document.getElementById('btnPublish').innerText = t.btnPublish;
   }
 
   const SUPABASE_URL = 'https://momhpeulxtwugqgcrvjs.supabase.co';
@@ -365,7 +528,10 @@
   }
 
   async function loadAdminProducts() {
+    const lang = localStorage.getItem('admin_lang') || 'uk';
+    const t = translations[lang];
     const listDiv = document.getElementById('productList');
+    
     try {
       const { data, error } = await supabaseClient
         .from('products')
@@ -376,11 +542,13 @@
       renderAdminList();
     } catch (err) {
       console.error(err);
-      listDiv.innerHTML = `<div style="color:var(--danger-color)">Помилка завантаження: ${err.message}</div>`;
+      listDiv.innerHTML = `<div style="color:var(--danger-color)">${t.errLoad}${err.message}</div>`;
     }
   }
 
   function renderAdminList() {
+    const lang = localStorage.getItem('admin_lang') || 'uk';
+    const t = translations[lang];
     const listDiv = document.getElementById('productList');
     const search = document.getElementById('adminSearch').value.toLowerCase();
     const cat = document.getElementById('adminCatFilter').value;
@@ -403,7 +571,7 @@
     document.getElementById('totalCount').innerText = items.length;
 
     if (items.length === 0) {
-      listDiv.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 20px;">Немає товарів</div>';
+      listDiv.innerHTML = `<div style="text-align:center; color: var(--text-muted); padding: 20px;">${t.noProducts}</div>`;
       return;
     }
 
@@ -416,9 +584,9 @@
       const sizesStr = prod.sizes && Array.isArray(prod.sizes) ? prod.sizes.join(', ') : (prod.sizes || '—');
 
       let catName = prod.category;
-      if (prod.category === 'clothes') catName = 'Одяг';
-      else if (prod.category === 'shoes') catName = 'Взуття';
-      else if (prod.category === 'accessories') catName = 'Аксесуари';
+      if (prod.category === 'clothes') catName = t.catClothes;
+      else if (prod.category === 'shoes') catName = t.catShoes;
+      else if (prod.category === 'accessories') catName = t.catAccessories;
 
       div.innerHTML = `
         <div class="product-info">
@@ -426,18 +594,21 @@
           <div>
             <strong>${displayTitle}</strong>
             <div style="font-size:12px; color: var(--text-muted); margin-top:2px;">
-              Категорія: ${catName || '—'} | Бренд: ${prod.brand || '—'} | Ціна: ${prod.price || 0} грн | Розміри: ${sizesStr}
+              ${catName} | ${prod.brand || '—'} | ${prod.price || 0} UAH | ${sizesStr}
             </div>
           </div>
         </div>
-        <button class="btn-delete" onclick="deleteProduct('${prod.id}')">Видалити</button>
+        <button class="btn-delete" onclick="deleteProduct('${prod.id}')">${t.deleteBtn}</button>
       `;
       listDiv.appendChild(div);
     });
   }
 
   async function deleteProduct(id) {
-    if (!confirm('Ви дійсно хочете видалити цей товар?')) return;
+    const lang = localStorage.getItem('admin_lang') || 'uk';
+    const t = translations[lang];
+
+    if (!confirm(t.confirmDelete)) return;
 
     try {
       const { error } = await supabaseClient
@@ -446,31 +617,34 @@
         .eq('id', id);
 
       if (error) {
-        alert('Помилка видалення: ' + error.message);
+        alert(t.errDelete + error.message);
         console.error('Delete Error:', error);
       } else {
-        alert('Товар видалено!');
+        alert(t.successDelete);
         loadAdminProducts();
       }
     } catch (err) {
-      alert('Помилка під час виконання операції');
+      alert(t.errDelete);
       console.error(err);
     }
   }
 
   document.getElementById('addForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const lang = localStorage.getItem('admin_lang') || 'uk';
+    const t = translations[lang];
     const btn = document.getElementById('btnPublish');
+    
     btn.disabled = true;
-    btn.innerText = 'Завантаження картинки...';
+    btn.innerText = t.btnPublishingImg;
 
     const fileInput = document.getElementById('imageFile');
     const file = fileInput.files[0];
 
     if (!file) {
-      alert('Виберіть зображення!');
+      alert(t.selectImgAlert);
       btn.disabled = false;
-      btn.innerText = 'Опублікувати товар';
+      btn.innerText = t.btnPublish;
       return;
     }
 
@@ -479,7 +653,7 @@
       const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      btn.innerText = 'Завантаження зображення...';
+      btn.innerText = t.btnPublishingUpload;
       const { error: uploadError } = await supabaseClient.storage
         .from('products')
         .upload(filePath, file);
@@ -492,7 +666,7 @@
 
       const imageUrl = publicUrlData.publicUrl;
 
-      btn.innerText = 'Збереження товару...';
+      btn.innerText = t.btnPublishingSave;
       const selectedSizes = Array.from(document.querySelectorAll('#sizesContainer input:checked')).map(cb => cb.value);
 
       const newProduct = {
@@ -512,19 +686,21 @@
 
       if (insertError) throw insertError;
 
-      alert('Товар успішно додано!');
+      alert(t.successAdd);
       document.getElementById('addForm').reset();
       updateSizesUI();
       loadAdminProducts();
     } catch (err) {
-      alert('Помилка: ' + err.message);
+      alert('Error: ' + err.message);
       console.error(err);
     } finally {
       btn.disabled = false;
-      btn.innerText = 'Опублікувати товар';
+      btn.innerText = t.btnPublish;
     }
   });
 
+  // Первинний запуск
+  applyTranslations(savedLang);
   updateSizesUI();
   loadAdminProducts();
 </script>
