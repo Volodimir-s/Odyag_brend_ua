@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Odyag_brend_ua</title>
-  <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -20,13 +19,13 @@
     body {
       margin: 0;
       padding: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
     }
 
     header {
-      padding: 20px 40px;
+      padding: 15px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -36,21 +35,43 @@
 
     h1 {
       margin: 0;
-      font-size: 24px;
+      font-size: 22px;
       color: var(--accent-color);
+    }
+
+    .header-btns {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-action {
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.2s;
+    }
+
+    .btn-action:hover {
+      background-color: var(--border-color);
     }
 
     .container {
       max-width: 1200px;
-      margin: 30px auto;
+      margin: 25px auto;
       padding: 0 20px;
     }
 
-    .controls {
+    .search-bar {
       display: flex;
-      gap: 15px;
-      margin-bottom: 30px;
-      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 25px;
     }
 
     input, select {
@@ -69,8 +90,8 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 25px;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 20px;
     }
 
     .card {
@@ -80,17 +101,11 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
     }
 
     .card img {
       width: 100%;
-      height: 280px;
+      height: 260px;
       object-fit: cover;
       background-color: #0b1120;
     }
@@ -105,11 +120,11 @@
     .card-title {
       font-size: 18px;
       font-weight: 600;
-      margin: 0 0 10px 0;
+      margin: 0 0 8px 0;
     }
 
     .card-meta {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-muted);
       margin-bottom: 10px;
     }
@@ -118,20 +133,20 @@
       font-size: 20px;
       font-weight: bold;
       color: var(--accent-color);
-      margin-bottom: 15px;
+      margin-bottom: 12px;
     }
 
     .sizes-list {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       flex-wrap: wrap;
-      margin-bottom: 15px;
+      margin-bottom: 12px;
     }
 
     .size-tag {
       background-color: #334155;
-      font-size: 12px;
-      padding: 3px 8px;
+      font-size: 11px;
+      padding: 3px 7px;
       border-radius: 4px;
     }
 
@@ -144,20 +159,50 @@
       padding: 10px;
       border-radius: 8px;
       font-weight: bold;
-      transition: background-color 0.2s;
     }
 
-    .btn-buy:hover {
-      background-color: var(--accent-hover);
-      color: #fff;
+    /* Модальное окно фильтров */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 25px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .close-btn {
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--text-muted);
     }
 
     .empty-msg {
       text-align: center;
-      font-size: 18px;
       color: var(--text-muted);
       grid-column: 1 / -1;
-      padding: 50px 0;
+      padding: 40px;
     }
   </style>
 </head>
@@ -165,11 +210,15 @@
 
   <header>
     <h1>Odyag_brend_ua</h1>
+    <div class="header-btns">
+      <button class="btn-action" onclick="openFilters()">🔍 Фильтры</button>
+      <button class="btn-action" onclick="openSettings()">⚙️ Настройки</button>
+    </div>
   </header>
 
   <div class="container">
-    <div class="controls">
-      <input type="text" id="searchInput" placeholder="Поиск по названию..." style="flex-grow: 1;">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Поиск по названию или артикулу..." style="flex-grow: 1;">
       <select id="categorySelect">
         <option value="all">Все категории</option>
         <option value="clothes">Одежда</option>
@@ -183,19 +232,38 @@
     </div>
   </div>
 
+  <!-- Модальное окно расширенных фильтров -->
+  <div class="modal" id="filterModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span>Фильтры и сортировка</span>
+        <span class="close-btn" onclick="closeFilters()">&times;</span>
+      </div>
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Сортировка по цене:</label>
+        <select id="sortSelect" style="width: 100%; margin-top: 5px;">
+          <option value="default">Сначала новые</option>
+          <option value="price_asc">От дешевых к дорогим</option>
+          <option value="price_desc">От дорогих к дешевым</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Бренд:</label>
+        <input type="text" id="brandInput" placeholder="Например: Nike, Adidas" style="width: 92%; margin-top: 5px;">
+      </div>
+      <button class="btn-buy" onclick="applyModalFilters()" style="cursor: pointer;">Применить</button>
+    </div>
+  </div>
+
   <script>
-    // Подключение к Supabase с рабочими ключами
     const SUPABASE_URL = 'https://momhpeulxtwugqgcrvjs.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vbWhwZXVseHR3dWdxZ2NydmpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NDAxMTgsImV4cCI6MjEwNTIxNjExOH0.42x9SWmfP74egl8WEgItTX2_FHeazFrofoRa2ohNSok';
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
     let allProducts = [];
 
-    // Функция загрузки товаров из БД
     async function loadProducts() {
       const grid = document.getElementById('productsGrid');
-      
       try {
         const { data, error } = await supabaseClient
           .from('products')
@@ -203,17 +271,33 @@
           .order('id', { ascending: false });
 
         if (error) throw error;
-
         allProducts = data || [];
-        renderProducts(allProducts);
-
+        filterAndRender();
       } catch (err) {
-        console.error('Ошибка загрузки товаров:', err);
-        grid.innerHTML = `<div class="empty-msg">Ошибка загрузки товаров: ${err.message}</div>`;
+        console.error(err);
+        grid.innerHTML = `<div class="empty-msg">Ошибка загрузки: ${err.message}</div>`;
       }
     }
 
-    // Функция отрисовки товаров
+    function filterAndRender() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const category = document.getElementById('categorySelect').value;
+      const sort = document.getElementById('sortSelect').value;
+      const brandFilter = document.getElementById('brandInput').value.toLowerCase();
+
+      let filtered = allProducts.filter(p => {
+        const matchTitle = (p.title || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search);
+        const matchCategory = category === 'all' || p.category === category;
+        const matchBrand = !brandFilter || (p.brand || '').toLowerCase().includes(brandFilter);
+        return matchTitle && matchCategory && matchBrand;
+      });
+
+      if (sort === 'price_asc') filtered.sort((a, b) => Number(a.price) - Number(b.price));
+      if (sort === 'price_desc') filtered.sort((a, b) => Number(b.price) - Number(a.price));
+
+      renderProducts(filtered);
+    }
+
     function renderProducts(products) {
       const grid = document.getElementById('productsGrid');
       grid.innerHTML = '';
@@ -244,24 +328,14 @@
       });
     }
 
-    // Фильтрация и поиск
-    document.getElementById('searchInput').addEventListener('input', filterProducts);
-    document.getElementById('categorySelect').addEventListener('change', filterProducts);
+    document.getElementById('searchInput').addEventListener('input', filterAndRender);
+    document.getElementById('categorySelect').addEventListener('change', filterAndRender);
 
-    function filterProducts() {
-      const search = document.getElementById('searchInput').value.toLowerCase();
-      const category = document.getElementById('categorySelect').value;
+    function openFilters() { document.getElementById('filterModal').style.display = 'flex'; }
+    function closeFilters() { document.getElementById('filterModal').style.display = 'none'; }
+    function openSettings() { alert('Раздел настроек'); }
+    function applyModalFilters() { filterAndRender(); closeFilters(); }
 
-      const filtered = allProducts.filter(p => {
-        const matchTitle = (p.title || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search);
-        const matchCategory = category === 'all' || p.category === category;
-        return matchTitle && matchCategory;
-      });
-
-      renderProducts(filtered);
-    }
-
-    // Старт
     loadProducts();
   </script>
 </body>
