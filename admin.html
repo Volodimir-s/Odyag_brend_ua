@@ -54,7 +54,6 @@
             margin: 0;
         }
 
-        /* Переключатель темы */
         .theme-switch-wrapper {
             display: flex;
             align-items: center;
@@ -116,7 +115,6 @@
             box-sizing: border-box;
         }
 
-        /* Чекбоксы размеров */
         .sizes-grid {
             display: flex;
             flex-wrap: wrap;
@@ -159,7 +157,6 @@
 
         .btn-submit:hover { opacity: 0.9; }
 
-        /* Панель фильтров списка товаров */
         .list-filters {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -169,7 +166,6 @@
             border-bottom: 1px solid var(--border-color);
         }
 
-        /* Список товаров */
         .product-list-item {
             display: flex;
             align-items: center;
@@ -277,7 +273,6 @@
                     <input type="url" id="tg_link" required placeholder="https://t.me/your_manager">
                 </div>
 
-                <!-- Доступные размеры -->
                 <div class="form-group full-width">
                     <label>Выберите доступные размеры *</label>
                     <div class="sizes-grid" id="sizesContainer"></div>
@@ -323,7 +318,7 @@
     
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    let rawProductsData = []; // Хранение исходных данных для фильтрации
+    let rawProductsData = [];
 
     const subtypesData = {
         clothes: ['Штаны', 'Худи / Свитшоты', 'Куртки / Ветровки', 'Футболки', 'Шорты'],
@@ -371,23 +366,29 @@
         customGroup.style.display = (select.value === 'custom') ? 'flex' : 'none';
     }
 
-    // Загрузка файла картинки в Supabase Storage
+    // Загрузка файла с очисткой имени от русских букв и пробелов
     async function uploadImage(file) {
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
-        const filePath = `${fileName}`;
+        const fileExt = file.name.split('.').pop().toLowerCase();
+        const cleanFileName = `img_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
 
-        const { data, error } = await supabaseClient.storage.from('product-images').upload(filePath, file);
+        const { data, error } = await supabaseClient.storage
+            .from('product-images')
+            .upload(cleanFileName, file, {
+                contentType: file.type,
+                upsert: false
+            });
 
         if (error) {
             throw new Error('Ошибка загрузки фото: ' + error.message);
         }
 
-        const { data: publicUrlData } = supabaseClient.storage.from('product-images').getPublicUrl(filePath);
+        const { data: publicUrlData } = supabaseClient.storage
+            .from('product-images')
+            .getPublicUrl(cleanFileName);
+
         return publicUrlData.publicUrl;
     }
 
-    // Загрузка товаров из базы
     async function fetchAdminProducts() {
         let { data, error } = await supabaseClient.from('products').select('*');
 
@@ -400,7 +401,6 @@
         renderAdminProducts();
     }
 
-    // Фильтрация и отображение списка
     function renderAdminProducts() {
         const container = document.getElementById('adminProductsContainer');
         const countSpan = document.getElementById('totalCount');
@@ -411,7 +411,6 @@
 
         let filtered = [...rawProductsData];
 
-        // 1. Поиск
         if (search) {
             filtered = filtered.filter(p => 
                 (p.title && p.title.toLowerCase().includes(search)) || 
@@ -419,12 +418,10 @@
             );
         }
 
-        // 2. Фильтр категории
         if (catFilter !== 'all') {
             filtered = filtered.filter(p => p.category === catFilter);
         }
 
-        // 3. Сортировка
         if (sortType === 'newest') {
             filtered.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
         } else if (sortType === 'oldest') {
@@ -456,7 +453,6 @@
         `).join('');
     }
 
-    // Удаление товара
     async function deleteProduct(id) {
         if (!confirm('Вы уверены, что хотите удалить этот товар?')) return;
 
@@ -469,7 +465,6 @@
         }
     }
 
-    // Добавление товара
     document.getElementById('addProductForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -502,7 +497,6 @@
         submitBtn.innerText = 'Загрузка изображения...';
 
         try {
-            // Загружаем картинку в Supabase Storage
             const uploadedImageUrl = await uploadImage(fileInput.files[0]);
 
             submitBtn.innerText = 'Сохранение товара...';
@@ -538,7 +532,6 @@
         }
     });
 
-    // Инициализация
     onCategoryChange();
     fetchAdminProducts();
 </script>
