@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель — Добавление товара</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #121212; color: #fff; padding: 20px; }
+    .form-container { max-width: 500px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 10px; }
+    .field { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
+    input, select, button { padding: 10px; border-radius: 5px; border: 1px solid #333; background: #2a2a2a; color: #fff; }
+    button { background: #24a1de; cursor: pointer; font-weight: bold; border: none; }
+    #status { margin-top: 15px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>Добавить новый товар</h2>
+    
+    <button onclick="loginGoogle()" style="margin-bottom: 15px; width: 100%;">1. Войти через Google (Админ)</button>
+
+    <form id="productForm" onsubmit="saveProduct(event)">
+      <div class="field">
+        <label>Название товара:</label>
+        <input type="text" id="title" required placeholder="Например: Ветровка Nike">
+      </div>
+
+      <div class="field">
+        <label>Категория:</label>
+        <select id="category">
+          <option value="clothes">Одежда</option>
+          <option value="shoes">Обувь</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Ссылка на пост в Telegram:</label>
+        <input type="url" id="tg_link" required placeholder="https://t.me/your_channel/123">
+      </div>
+
+      <div class="field">
+        <label>1. Размеры (через запятую):</label>
+        <input type="text" id="sizes" required placeholder="S, M, L или 41, 42">
+      </div>
+
+      <div class="field">
+        <label>2. Примерный возраст:</label>
+        <input type="text" id="age_group" placeholder="12-14 лет или Взрослый">
+      </div>
+
+      <div class="field">
+        <label>3. Страна производитель:</label>
+        <input type="text" id="country" placeholder="Турция">
+      </div>
+
+      <div class="field">
+        <label>Фотография товара (только одна):</label>
+        <input type="file" id="imageFile" accept="image/*" required>
+      </div>
+
+      <button type="submit" style="width: 100%;">Опубликовать товар</button>
+    </form>
+
+    <div id="status"></div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://momhpeulxtwugqgcrvjs.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_K4Ds2nST2VYbNFodcp1FLA__uX00';
+    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function loginGoogle() {
+      await supabase.auth.signInWithOAuth({ provider: 'google' });
+    }
+
+    async function saveProduct(e) {
+      e.preventDefault();
+      const status = document.getElementById('status');
+      status.innerText = 'Загрузка...';
+
+      const fileInput = document.getElementById('imageFile');
+      const file = fileInput.files[0];
+
+      if (!file) return alert('Выберите фото!');
+
+      const fileName = `${Date.now()}_${file.name}`;
+      const { data: imgData, error: imgError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file);
+
+      if (imgError) {
+        status.innerText = 'Ошибка загрузки фото: ' + imgError.message;
+        return;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName);
+
+      const imageUrl = publicUrlData.publicUrl;
+
+      const sizesArray = document.getElementById('sizes').value.split(',').map(s => s.trim());
+
+      const { error: dbError } = await supabase.from('products').insert([{
+        title: document.getElementById('title').value,
+        category: document.getElementById('category').value,
+        tg_link: document.getElementById('tg_link').value,
+        sizes: sizesArray,
+        age_group: document.getElementById('age_group').value,
+        country: document.getElementById('country').value,
+        image_url: imageUrl
+      }]);
+
+      if (dbError) {
+        status.innerText = 'Ошибка создания товара: ' + dbError.message;
+      } else {
+        status.innerText = '✅ Товар успешно добавлен!';
+        document.getElementById('productForm').reset();
+      }
+    }
+  </script>
+</body>
+</html>
