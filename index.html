@@ -1,163 +1,172 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="dark">
+<html lang="uk" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Магазин одежды</title>
-  <!-- Подключаем Supabase SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    :root[data-theme="dark"] {
-      --bg: #121212; --card-bg: #1e1e1e; --text: #ffffff; --border: #333;
-    }
-    :root[data-theme="light"] {
-      --bg: #f4f4f9; --card-bg: #ffffff; --text: #000000; --border: #ddd;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odyag_brend_ua — Каталог</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-color: #38bdf8;
+            --border-color: #334155;
+        }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: Arial, sans-serif;
-      margin: 0; padding: 20px;
-      transition: all 0.3s ease;
-    }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
 
-    header {
-      display: flex; justify-content: space-between; align-items: center;
-      max-width: 1000px; margin: 0 auto 20px;
-    }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
 
-    .controls { display: flex; gap: 10px; }
-    
-    select, button {
-      padding: 8px 12px; border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--card-bg); color: var(--text);
-      cursor: pointer;
-    }
+        h1 { margin: 0; color: var(--accent-color); }
 
-    .catalog {
-      display: flex; flex-direction: column; gap: 20px;
-      max-width: 1000px; margin: 0 auto;
-    }
+        .filters {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
 
-    /* Карточка товара: фото слева, инфо справа */
-    .product-card {
-      display: flex; gap: 20px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px; padding: 15px;
-    }
+        select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            background: #1e1e1e;
+            color: #fff;
+            border: 1px solid var(--border-color);
+        }
 
-    .product-left img {
-      width: 200px; height: 250px;
-      object-fit: cover; border-radius: 8px;
-      cursor: pointer; transition: transform 0.2s;
-    }
-    .product-left img:hover { transform: scale(1.02); }
+        .catalog {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
 
-    .product-right { display: flex; flex-direction: column; justify-content: space-between; }
-    .product-right h3 { margin: 0 0 10px 0; }
-    
-    .specs-list { list-style: none; padding: 0; margin: 0 0 15px 0; line-height: 1.6; }
-    
-    .tg-btn {
-      display: inline-block; padding: 10px 15px;
-      background: #24A1DE; color: white;
-      text-decoration: none; border-radius: 6px; text-align: center;
-      font-weight: bold; width: fit-content;
-    }
-  </style>
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card img {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+        }
+
+        .card-body {
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .card-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 10px; }
+        .card-info { font-size: 0.85rem; color: #94a3b8; margin-bottom: 5px; }
+
+        .btn-buy {
+            margin-top: auto;
+            display: block;
+            text-align: center;
+            background: #24a1de;
+            color: #fff;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1>Каталог</h1>
-    <div class="controls">
-      <!-- Фильтр одежды -->
-      <select id="categoryFilter" onchange="loadProducts()">
-        <option value="all">Все категории</option>
-        <option value="clothes">Одежда</option>
-        <option value="shoes">Обувь</option>
-      </select>
-
-      <!-- Переключатель темы -->
-      <button onclick="toggleTheme()">🌓 Тема</button>
-      
-      <!-- Вход через Google -->
-      <button id="authBtn" onclick="loginGoogle()">Войти через Google</button>
-    </div>
-  </header>
-
-  <main class="catalog" id="productsContainer">
-    <p>Загрузка товаров...</p>
-  </main>
-
-  <script>
-    // Подключение к Supabase
-    const SUPABASE_URL = 'https://momhpeulxtwugqgcrvjs.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_K4DsZn5T2VYbNFodcp1fLA__uXO0T-B';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    // Переключение темы
-    function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme');
-      const next = current === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-    }
-
-    // Авторизация Google
-    async function loginGoogle() {
-      await supabase.auth.signInWithOAuth({ provider: 'google' });
-    }
-
-    // Загрузка и вывод товаров
-    async function loadProducts() {
-      const category = document.getElementById('categoryFilter').value;
-      const container = document.getElementById('productsContainer');
-      
-      let query = supabase.from('products').select('*');
-      if (category !== 'all') query = query.eq('category', category);
-
-      const { data: products, error } = await query;
-
-      if (error) {
-        container.innerHTML = '<p>Ошибка загрузки товаров</p>';
-        return;
-      }
-
-      if (products.length === 0) {
-        container.innerHTML = '<p>Товаров пока нет</p>';
-        return;
-      }
-
-      container.innerHTML = products.map(item => `
-        <div class="product-card">
-          <!-- Левая часть: кликабельное фото -->
-          <div class="product-left">
-            <a href="${item.tg_link}" target="_blank">
-              <img src="${item.image_url}" alt="${item.title}">
-            </a>
-          </div>
-
-          <!-- Правая часть: список характеристик -->
-          <div class="product-right">
-            <div>
-              <h3>${item.title}</h3>
-              <ul class="specs-list">
-                <li><strong>1. Размеры:</strong> ${item.sizes.join(', ')}</li>
-                <li><strong>2. Примерный возраст:</strong> ${item.age_group || 'Не указан'}</li>
-                <li><strong>3. Страна производитель:</strong> ${item.country || 'Не указана'}</li>
-              </ul>
-            </div>
-            <a href="${item.tg_link}" target="_blank" class="tg-btn">Смотреть в Telegram</a>
-          </div>
+    <header>
+        <h1>Odyag_brend_ua</h1>
+        <div class="filters">
+            <select id="categoryFilter" onchange="loadProducts()">
+                <option value="all">Все категории</option>
+                <optgroup label="Одежда">
+                    <option value="clothes-nike">Одежда — Nike</option>
+                    <option value="clothes-adidas">Одежда — Adidas</option>
+                    <option value="clothes-puma">Одежда — Puma</option>
+                    <option value="clothes-stone-island">Одежда — Stone Island</option>
+                    <option value="clothes-other">Одежда — Другое</option>
+                </optgroup>
+                <optgroup label="Обувь">
+                    <option value="shoes-nike">Обувь — Nike</option>
+                    <option value="shoes-adidas">Обувь — Adidas</option>
+                    <option value="shoes-puma">Обувь — Puma</option>
+                    <option value="shoes-other">Обувь — Другое</option>
+                </optgroup>
+                <optgroup label="Аксессуары">
+                    <option value="acc-bags">Сумки / Рюкзаки</option>
+                    <option value="acc-caps">Кепки / Шапки</option>
+                    <option value="acc-other">Другое</option>
+                </optgroup>
+            </select>
         </div>
-      `).join('');
-    }
+    </header>
 
-    // Старт при загрузке
-    loadProducts();
-  </script>
+    <main class="catalog" id="productsContainer">
+        <p>Загрузка товаров...</p>
+    </main>
+
+    <script>
+        const SUPABASE_URL = 'https://momhpeulxtwugqgcrvjs.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_K4Ds2nST2VYbNFodcp1FLA__uX00';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        async function loadProducts() {
+            const container = document.getElementById('productsContainer');
+            const category = document.getElementById('categoryFilter').value;
+
+            let query = supabase.from('products').select('*');
+            if (category !== 'all') {
+                query = query.eq('category', category);
+            }
+
+            const { data, error } = await query;
+
+            if (error) {
+                container.innerHTML = '<p>Ошибка загрузки товаров</p>';
+                return;
+            }
+
+            if (data.length === 0) {
+                container.innerHTML = '<p>В этой категории пока нет товаров.</p>';
+                return;
+            }
+
+            container.innerHTML = data.map(item => `
+                <div class="card">
+                    <img src="${item.image_url}" alt="${item.title}">
+                    <div class="card-body">
+                        <div class="card-title">${item.title}</div>
+                        <div class="card-info"><b>Размеры:</b> ${item.sizes ? item.sizes.join(', ') : 'Н/Д'}</div>
+                        <div class="card-info"><b>Возраст:</b> ${item.age_group || '—'}</div>
+                        <div class="card-info"><b>Страна:</b> ${item.country || '—'}</div>
+                        <a href="${item.tg_link}" target="_blank" class="btn-buy">Купить в Telegram</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        loadProducts();
+    </script>
 </body>
 </html>
