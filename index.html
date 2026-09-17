@@ -270,7 +270,7 @@
     </div>
   </div>
 
-  <!-- Модальное окно фильтров (По разделам) -->
+  <!-- Модальное окно фильтров (Выпадающие списки) -->
   <div class="modal" id="filterModal">
     <div class="modal-content">
       <div class="modal-header">
@@ -278,7 +278,7 @@
         <span class="close-btn" onclick="closeFilters()">&times;</span>
       </div>
       
-      <!-- Раздел 1: Категория -->
+      <!-- Категория -->
       <div class="filter-section">
         <span class="filter-label" id="secCat">Категорія:</span>
         <select id="categorySelect">
@@ -289,13 +289,15 @@
         </select>
       </div>
 
-      <!-- Раздел 2: Бренд -->
+      <!-- Бренд (Список) -->
       <div class="filter-section">
         <span class="filter-label" id="lblBrand">Бренд:</span>
-        <input type="text" id="brandInput" placeholder="Nike, Adidas...">
+        <select id="brandSelect">
+          <option value="all" id="optAllBrands">Усі бренди</option>
+        </select>
       </div>
 
-      <!-- Раздел 3: Диапазон цен -->
+      <!-- Диапазон цен -->
       <div class="filter-section">
         <span class="filter-label" id="secPrice">Ціна:</span>
         <div class="price-inputs">
@@ -304,13 +306,15 @@
         </div>
       </div>
 
-      <!-- Раздел 4: Размер -->
+      <!-- Размер (Список) -->
       <div class="filter-section">
         <span class="filter-label" id="secSize">Розмір:</span>
-        <input type="text" id="sizeInput" placeholder="S, M, L, 42...">
+        <select id="sizeSelect">
+          <option value="all" id="optAllSizes">Усі розміри</option>
+        </select>
       </div>
 
-      <!-- Раздел 5: Сортировка -->
+      <!-- Сортировка -->
       <div class="filter-section">
         <span class="filter-label" id="lblSort">Сортування:</span>
         <select id="sortSelect">
@@ -379,10 +383,12 @@
         optShoes: 'Взуття',
         optAcc: 'Аксесуари',
         lblBrand: 'Бренд:',
+        optAllBrands: 'Усі бренди',
         secPrice: 'Ціна:',
         pFrom: 'Від',
         pTo: 'До',
         secSize: 'Розмір:',
+        optAllSizes: 'Усі розміри',
         lblSort: 'Сортування:',
         optNew: 'Спочатку нові',
         optAsc: 'Від дешевих до дорогих',
@@ -411,10 +417,12 @@
         optShoes: 'Обувь',
         optAcc: 'Аксессуары',
         lblBrand: 'Бренд:',
+        optAllBrands: 'Все бренды',
         secPrice: 'Цена:',
         pFrom: 'От',
         pTo: 'До',
         secSize: 'Размер:',
+        optAllSizes: 'Все размеры',
         lblSort: 'Сортировка:',
         optNew: 'Сначала новые',
         optAsc: 'От дешевых к дорогим',
@@ -444,6 +452,7 @@
 
         if (error) throw error;
         allProducts = data || [];
+        populateFilterOptions();
         filterAndRender();
       } catch (err) {
         console.error(err);
@@ -451,24 +460,53 @@
       }
     }
 
+    function populateFilterOptions() {
+      const brandSelect = document.getElementById('brandSelect');
+      const sizeSelect = document.getElementById('sizeSelect');
+
+      const brands = new Set();
+      const sizes = new Set();
+
+      allProducts.forEach(p => {
+        if (p.brand) brands.add(p.brand.trim());
+        if (p.sizes && Array.isArray(p.sizes)) {
+          p.sizes.forEach(s => sizes.add(s.trim()));
+        }
+      });
+
+      brands.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b;
+        opt.innerText = b;
+        brandSelect.appendChild(opt);
+      });
+
+      sizes.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s;
+        opt.innerText = s;
+        sizeSelect.appendChild(opt);
+      });
+    }
+
     function filterAndRender() {
       const search = document.getElementById('searchInput').value.toLowerCase();
       const category = document.getElementById('categorySelect').value;
-      const brandFilter = document.getElementById('brandInput').value.toLowerCase();
+      const selectedBrand = document.getElementById('brandSelect').value;
+      const selectedSize = document.getElementById('sizeSelect').value;
       const pFrom = parseFloat(document.getElementById('priceFrom').value) || 0;
       const pTo = parseFloat(document.getElementById('priceTo').value) || Infinity;
-      const sizeFilter = document.getElementById('sizeInput').value.toLowerCase();
       const sort = document.getElementById('sortSelect').value;
 
       let filtered = allProducts.filter(p => {
         const matchTitle = (p.title || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search);
         const matchCategory = category === 'all' || p.category === category;
-        const matchBrand = !brandFilter || (p.brand || '').toLowerCase().includes(brandFilter);
+        const matchBrand = selectedBrand === 'all' || (p.brand || '').trim() === selectedBrand;
         
         const price = parseFloat(p.price) || 0;
         const matchPrice = price >= pFrom && price <= pTo;
 
-        const matchSize = !sizeFilter || (p.sizes && Array.isArray(p.sizes) && p.sizes.some(s => s.toLowerCase().includes(sizeFilter)));
+        const matchSize = selectedSize === 'all' || (p.sizes && Array.isArray(p.sizes) && p.sizes.includes(selectedSize));
 
         return matchTitle && matchCategory && matchBrand && matchPrice && matchSize;
       });
@@ -527,10 +565,12 @@
       document.getElementById('optShoes').innerText = t.optShoes;
       document.getElementById('optAcc').innerText = t.optAcc;
       document.getElementById('lblBrand').innerText = t.lblBrand;
+      document.getElementById('optAllBrands').innerText = t.optAllBrands;
       document.getElementById('secPrice').innerText = t.secPrice;
       document.getElementById('priceFrom').placeholder = t.pFrom;
       document.getElementById('priceTo').placeholder = t.pTo;
       document.getElementById('secSize').innerText = t.secSize;
+      document.getElementById('optAllSizes').innerText = t.optAllSizes;
       document.getElementById('lblSort').innerText = t.lblSort;
       document.getElementById('optNew').innerText = t.optNew;
       document.getElementById('optAsc').innerText = t.optAsc;
