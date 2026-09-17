@@ -3,73 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Админ-панель — Добавление товара</title>
+  <title>Админ-панель — Odyag_brend_ua</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    body { font-family: Arial, sans-serif; background: #121212; color: #fff; padding: 20px; }
-    .form-container { max-width: 500px; margin: 0 auto; background: #1e1e1e; padding: 20px; border-radius: 10px; }
-    .field { margin-bottom: 15px; display: flex; flex-direction: column; gap: 5px; }
-    input, select, button { padding: 10px; border-radius: 5px; border: 1px solid #333; background: #2a2a2a; color: #fff; }
-    button { background: #24a1de; cursor: pointer; font-weight: bold; border: none; }
-    #status { margin-top: 15px; font-weight: bold; }
-    optgroup { background: #1e1e1e; color: #38bdf8; font-weight: bold; }
+    body { font-family: Arial, sans-serif; background: #0f172a; color: #fff; padding: 20px; }
+    .form-container { max-width: 520px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #334155; }
+    .field { margin-bottom: 14px; display: flex; flex-direction: column; gap: 5px; }
+    input, select, button { padding: 10px; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 0.95rem; }
+    button { background: #38bdf8; color: #0f172a; cursor: pointer; font-weight: bold; border: none; }
+    button:hover { background: #0284c7; color: #fff; }
+    #status { margin-top: 15px; font-weight: bold; text-align: center; }
+    .row { display: flex; gap: 10px; }
+    .row .field { flex: 1; }
   </style>
 </head>
 <body>
 
   <div class="form-container">
-    <h2>Добавить новый товар</h2>
-    
+    <h2>Добавить товар</h2>
     <button onclick="loginGoogle()" style="margin-bottom: 15px; width: 100%;">1. Войти через Google (Админ)</button>
 
     <form id="productForm" onsubmit="saveProduct(event)">
       <div class="field">
         <label>Название товара:</label>
-        <input type="text" id="title" required placeholder="Например: Ветровка Nike">
+        <input type="text" id="title" required placeholder="Худи Nike Tech Fleece">
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Артикул (SKU):</label>
+          <input type="text" id="sku" placeholder="Напр. NK-102" required>
+        </div>
+        <div class="field">
+          <label>Цена (грн):</label>
+          <input type="number" id="price" required placeholder="1500">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Тип:</label>
+          <select id="type" onchange="updateSubtypes()" required>
+            <option value="clothes">Одежда</option>
+            <option value="shoes">Обувь</option>
+            <option value="accessories">Аксессуары</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Подкатегория:</label>
+          <select id="subtype" required>
+            <!-- Заполняется динамически -->
+          </select>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label>Бренд:</label>
+          <select id="brand" required>
+            <option value="Nike">Nike</option>
+            <option value="Adidas">Adidas</option>
+            <option value="Puma">Puma</option>
+            <option value="Stone Island">Stone Island</option>
+            <option value="Jordan">Jordan</option>
+            <option value="Other">Другой</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Размеры (через запятую):</label>
+          <input type="text" id="sizes" required placeholder="S, M, L или 41, 42">
+        </div>
       </div>
 
       <div class="field">
-        <label>Категория и Бренд:</label>
-        <select id="category" required>
-          <optgroup label="Одежда">
-            <option value="clothes-nike">Одежда — Nike</option>
-            <option value="clothes-adidas">Одежда — Adidas</option>
-            <option value="clothes-puma">Одежда — Puma</option>
-            <option value="clothes-stone-island">Одежда — Stone Island</option>
-            <option value="clothes-other">Одежда — Другие бренды</option>
-          </optgroup>
-          <optgroup label="Обувь">
-            <option value="shoes-nike">Обувь — Nike</option>
-            <option value="shoes-adidas">Обувь — Adidas</option>
-            <option value="shoes-puma">Обувь — Puma</option>
-            <option value="shoes-other">Обувь — Другие бренды</option>
-          </optgroup>
-          <optgroup label="Аксессуары">
-            <option value="acc-bags">Сумки / Рюкзаки</option>
-            <option value="acc-caps">Кепки / Шапки</option>
-            <option value="acc-other">Другие аксессуары</option>
-          </optgroup>
-        </select>
-      </div>
-
-      <div class="field">
-        <label>Ссылка на пост в Telegram:</label>
+        <label>Ссылка на Telegram:</label>
         <input type="url" id="tg_link" required placeholder="https://t.me/your_channel/123">
       </div>
 
-      <div class="field">
-        <label>Размеры (выберите или введите через запятую):</label>
-        <input type="text" id="sizes" required placeholder="S, M, L, XL или 41, 42, 43">
-      </div>
-
-      <div class="field">
-        <label>Примерный возраст:</label>
-        <input type="text" id="age_group" placeholder="12-14 лет или Взрослый">
-      </div>
-
-      <div class="field">
-        <label>Страна производитель:</label>
-        <input type="text" id="country" placeholder="Турция">
+      <div class="row">
+        <div class="field">
+          <label>Возрастная группа:</label>
+          <input type="text" id="age_group" placeholder="Взрослый / 12-14 лет">
+        </div>
+        <div class="field">
+          <label>Страна:</label>
+          <input type="text" id="country" placeholder="Турция">
+        </div>
       </div>
 
       <div class="field">
@@ -77,7 +96,7 @@
         <input type="file" id="imageFile" accept="image/*" required>
       </div>
 
-      <button type="submit" style="width: 100%;">Опубликовать товар</button>
+      <button type="submit" style="width: 100%; margin-top: 10px;">Опубликовать товар</button>
     </form>
 
     <div id="status"></div>
@@ -88,6 +107,19 @@
     const SUPABASE_KEY = 'sb_publishable_K4Ds2nST2VYbNFodcp1FLA__uX00';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    const subtypesData = {
+      clothes: ['Штаны', 'Худи / Свитшоты', 'Куртки / Ветровки', 'Футболки', 'Шорты'],
+      shoes: ['Кроссовки', ' Кеды', 'Ботинки', 'Тапочки'],
+      accessories: ['Сумки / Рюкзаки', 'Кепки / Шапки', ' Носки', 'Другое']
+    };
+
+    function updateSubtypes() {
+      const type = document.getElementById('type').value;
+      const subtypeSelect = document.getElementById('subtype');
+      subtypeSelect.innerHTML = subtypesData[type].map(s => `<option value="${s}">${s}</option>`).join('');
+    }
+    updateSubtypes();
+
     async function loginGoogle() {
       await supabase.auth.signInWithOAuth({ provider: 'google' });
     }
@@ -97,43 +129,41 @@
       const status = document.getElementById('status');
       status.innerText = 'Загрузка...';
 
-      const fileInput = document.getElementById('imageFile');
-      const file = fileInput.files[0];
-
+      const file = document.getElementById('imageFile').files[0];
       if (!file) return alert('Выберите фото!');
 
       const fileName = `${Date.now()}_${file.name}`;
-      const { data: imgData, error: imgError } = await supabase.storage
-        .from('product-images')
-        .upload(fileName, file);
+      const { error: imgError } = await supabase.storage.from('product-images').upload(fileName, file);
 
       if (imgError) {
-        status.innerText = 'Ошибка загрузки фото: ' + imgError.message;
+        status.innerText = 'Ошибка фото: ' + imgError.message;
         return;
       }
 
-      const { data: publicUrlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(fileName);
+      const { data: publicUrlData } = supabase.storage.from('product-images').getPublicUrl(fileName);
 
-      const imageUrl = publicUrlData.publicUrl;
       const sizesArray = document.getElementById('sizes').value.split(',').map(s => s.trim().toUpperCase());
 
       const { error: dbError } = await supabase.from('products').insert([{
         title: document.getElementById('title').value,
-        category: document.getElementById('category').value,
-        tg_link: document.getElementById('tg_link').value,
+        sku: document.getElementById('sku').value.trim(),
+        price: parseFloat(document.getElementById('price').value) || 0,
+        category: document.getElementById('type').value,
+        subtype: document.getElementById('subtype').value,
+        brand: document.getElementById('brand').value,
         sizes: sizesArray,
+        tg_link: document.getElementById('tg_link').value,
         age_group: document.getElementById('age_group').value,
         country: document.getElementById('country').value,
-        image_url: imageUrl
+        image_url: publicUrlData.publicUrl
       }]);
 
       if (dbError) {
-        status.innerText = 'Ошибка создания товара: ' + dbError.message;
+        status.innerText = 'Ошибка сохранения: ' + dbError.message;
       } else {
-        status.innerText = '✅ Товар успешно добавлен!';
+        status.innerText = '✅ Товар успешно опубликован!';
         document.getElementById('productForm').reset();
+        updateSubtypes();
       }
     }
   </script>
