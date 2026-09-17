@@ -42,7 +42,7 @@
         /* Поля фильтров в модалке */
         .filter-group { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
         .filter-group label { font-size: 0.85rem; font-weight: bold; opacity: 0.9; }
-        .filter-group input, .filter-group select { padding: 9px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.9rem; }
+        .filter-group input, .filter-group select { padding: 9px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.9rem; width: 100%; box-sizing: border-box; }
         
         /* Цены в столбик */
         .price-group-col { display: flex; flex-direction: column; gap: 8px; }
@@ -90,7 +90,7 @@
         <p>Загрузка товаров...</p>
     </main>
 
-    <!-- Модальная вкладка ФИЛЬТРОВ -->
+    <!-- Модальное окно ФИЛЬТРОВ -->
     <div class="modal" id="filtersModal">
         <div class="modal-content">
             <span class="modal-close" onclick="closeFilters()">&times;</span>
@@ -103,9 +103,9 @@
                 </div>
 
                 <div>
-                    <label>Тип одежды:</label>
-                    <select id="typeFilter" onchange="updateSubtypeFilter(); loadProducts();">
-                        <option value="all">Все типы</option>
+                    <label>Категория (Тип):</label>
+                    <select id="typeFilter" onchange="onTypeChange()">
+                        <option value="all">Все категории</option>
                         <option value="clothes">Одежда</option>
                         <option value="shoes">Обувь</option>
                         <option value="accessories">Аксессуары</option>
@@ -128,12 +128,15 @@
                         <option value="Puma">Puma</option>
                         <option value="Stone Island">Stone Island</option>
                         <option value="Jordan">Jordan</option>
+                        <option value="Другое">Другое</option>
                     </select>
                 </div>
 
                 <div>
                     <label>Размер:</label>
-                    <input type="text" id="sizeFilter" placeholder="S, M, L или 41, 42, 43..." oninput="loadProducts()">
+                    <select id="sizeFilter" onchange="loadProducts()">
+                        <option value="all">Все размеры</option>
+                    </select>
                 </div>
 
                 <div>
@@ -207,10 +210,18 @@
             en: { heading: "Settings", filterTitle: "Product Filter", lang: "Language:", theme: "Dark Theme:", curr: "Currency:", grid: "Grid:", buy: "Buy in Telegram", empty: "No products found" }
         };
 
+        // Структура подкатегорий
         const subtypesData = {
             clothes: ['Штаны', 'Худи / Свитшоты', 'Куртки / Ветровки', 'Футболки', 'Шорты'],
             shoes: ['Кроссовки', 'Кеды', 'Ботинки', 'Тапочки'],
             accessories: ['Сумки / Рюкзаки', 'Кепки / Шапки', 'Носки', 'Другое']
+        };
+
+        // Списки размеров
+        const sizesData = {
+            clothes: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'],
+            shoes: ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'],
+            accessories: ['One Size', 'S/M', 'L/XL']
         };
 
         function openFilters() { document.getElementById('filtersModal').style.display = 'flex'; }
@@ -219,14 +230,43 @@
         function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
         function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
 
+        // Обновление подкатегорий и размеров при выборе типа товара
+        function onTypeChange() {
+            updateSubtypeFilter();
+            updateSizeFilter();
+            loadProducts();
+        }
+
         function updateSubtypeFilter() {
             const type = document.getElementById('typeFilter').value;
             const subSelect = document.getElementById('subtypeFilter');
             subSelect.innerHTML = '<option value="all">Все подкатегории</option>';
+            
             if (type !== 'all' && subtypesData[type]) {
                 subtypesData[type].forEach(s => {
                     subSelect.innerHTML += `<option value="${s}">${s}</option>`;
                 });
+            }
+        }
+
+        function updateSizeFilter() {
+            const type = document.getElementById('typeFilter').value;
+            const sizeSelect = document.getElementById('sizeFilter');
+            sizeSelect.innerHTML = '<option value="all">Все размеры</option>';
+
+            if (type !== 'all' && sizesData[type]) {
+                sizesData[type].forEach(sz => {
+                    sizeSelect.innerHTML += `<option value="${sz}">${sz}</option>`;
+                });
+            } else {
+                // Если тип = "все", показываем все варианты по группам
+                let clothesOpts = sizesData.clothes.map(s => `<option value="${s}">${s}</option>`).join('');
+                let shoesOpts = sizesData.shoes.map(s => `<option value="${s}">${s}</option>`).join('');
+                let accOpts = sizesData.accessories.map(s => `<option value="${s}">${s}</option>`).join('');
+                
+                sizeSelect.innerHTML += `<optgroup label="Одежда">${clothesOpts}</optgroup>`;
+                sizeSelect.innerHTML += `<optgroup label="Обувь (EUR)">${shoesOpts}</optgroup>`;
+                sizeSelect.innerHTML += `<optgroup label="Аксессуары">${accOpts}</optgroup>`;
             }
         }
 
@@ -235,11 +275,9 @@
             document.getElementById('typeFilter').value = 'all';
             document.getElementById('subtypeFilter').value = 'all';
             document.getElementById('brandFilter').value = 'all';
-            document.getElementById('sizeFilter').value = '';
             document.getElementById('priceFrom').value = '';
             document.getElementById('priceTo').value = '';
-            updateSubtypeFilter();
-            loadProducts();
+            onTypeChange();
         }
 
         function toggleTheme() {
@@ -285,17 +323,15 @@
             loadProducts();
         }
 
-        // Форматирование вывода размеров под нужный формат
+        // Форматирование вывода размеров
         function formatSizes(sizes, category, subtype, brand) {
             if (!sizes || !Array.isArray(sizes) || sizes.length === 0) return 'Н/Д';
             
             return sizes.map(s => {
                 const cleanSize = String(s).trim();
-                // Если размер только цифры (например обувь 41, 42, 43)
                 if (/^\d+$/.test(cleanSize)) {
-                    return `${category || 'Товар'}-${brand || 'Бренд'}-${cleanSize}`;
+                    return `${category || 'Обувь'}-${brand || 'Бренд'}-${cleanSize}`;
                 } 
-                // Если буквы (S, M, L)
                 return `${category || 'Одежда'}-${subtype || 'Товар'}-${cleanSize.toUpperCase()}`;
             }).join(', ');
         }
@@ -306,7 +342,7 @@
             const type = document.getElementById('typeFilter').value;
             const subtype = document.getElementById('subtypeFilter').value;
             const brand = document.getElementById('brandFilter').value;
-            const sizeInput = document.getElementById('sizeFilter').value.toUpperCase().trim();
+            const selectedSize = document.getElementById('sizeFilter').value;
             const priceFrom = parseFloat(document.getElementById('priceFrom').value) || 0;
             const priceTo = parseFloat(document.getElementById('priceTo').value) || Infinity;
             const currency = document.getElementById('currencySelect').value;
@@ -324,12 +360,24 @@
                 if (showOnlyFavs && !favorites.includes(item.id)) return false;
                 if (type !== 'all' && item.category !== type) return false;
                 if (subtype !== 'all' && item.subtype !== subtype) return false;
-                if (brand !== 'all' && item.brand !== brand) return false;
+                
+                // Фильтр по бренду
+                if (brand !== 'all') {
+                    if (brand === 'Другое') {
+                        // Показываем товары, у которых бренд не входит в стандартный список
+                        const knownBrands = ['Nike', 'Adidas', 'Puma', 'Stone Island', 'Jordan'];
+                        if (knownBrands.includes(item.brand)) return false;
+                    } else if (item.brand !== brand) {
+                        return false;
+                    }
+                }
+
                 if (search && !(item.title.toLowerCase().includes(search) || (item.sku && item.sku.toLowerCase().includes(search)))) return false;
                 
-                if (sizeInput) {
+                // Фильтр по размеру
+                if (selectedSize !== 'all') {
                     if (!item.sizes || !Array.isArray(item.sizes)) return false;
-                    const hasSize = item.sizes.some(s => String(s).toUpperCase().includes(sizeInput));
+                    const hasSize = item.sizes.some(s => String(s).toUpperCase() === selectedSize.toUpperCase());
                     if (!hasSize) return false;
                 }
 
@@ -369,6 +417,8 @@
             }).join('');
         }
 
+        // Инициализация стартовых значений
+        updateSizeFilter();
         updateFavBtn();
         loadProducts();
     </script>
