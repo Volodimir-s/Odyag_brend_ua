@@ -27,21 +27,27 @@
 
         body { font-family: Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: background 0.3s, color 0.3s; }
         
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); gap: 10px; flex-wrap: wrap; }
         h1 { margin: 0; color: var(--accent-color); font-size: 1.5rem; }
 
+        .header-actions { display: flex; gap: 8px; align-items: center; }
         .settings-btn { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        
-        /* Модальное окно настроек */
+        .settings-btn:hover { border-color: var(--accent-color); }
+
+        /* Модальные окна */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 320px; border: 1px solid var(--border-color); position: relative; }
+        .modal-content { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 340px; border: 1px solid var(--border-color); position: relative; max-height: 90vh; overflow-y: auto; }
         .modal-close { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 1.2rem; font-weight: bold; }
 
-        /* Фильтры */
-        .filter-panel { background: var(--card-bg); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
-        .filter-panel input, .filter-panel select { padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); }
-        
-        .price-group { display: flex; gap: 5px; }
+        /* Поля фильтров в модалке */
+        .filter-group { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
+        .filter-group label { font-size: 0.85rem; font-weight: bold; opacity: 0.9; }
+        .filter-group input, .filter-group select { padding: 9px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.9rem; }
+        .price-group { display: flex; gap: 8px; }
+        .price-group input { flex: 1; }
+
+        /* Кнопка сброса внутри фильтра */
+        .btn-reset { background: #ef4444; color: #fff; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
 
         /* Каталог */
         .catalog { display: grid; grid-template-columns: var(--grid-cols); gap: 20px; }
@@ -59,7 +65,7 @@
         .fav-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); border: none; color: #fff; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 1rem; display: flex; justify-content: center; align-items: center; }
         .fav-btn.active { color: #ef4444; }
 
-        /* Переключатель-ползунок */
+        /* Ползунок темы */
         .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
@@ -72,50 +78,78 @@
 
     <header>
         <h1>Odyag_brend_ua</h1>
-        <div>
+        <div class="header-actions">
+            <button class="settings-btn" onclick="openFilters()">🔍 Фильтры</button>
             <button class="settings-btn" onclick="toggleFavFilter()" id="favToggleBtn">❤️ Избранное (0)</button>
             <button class="settings-btn" onclick="openSettings()">⚙️ Настройки</button>
         </div>
     </header>
-
-    <!-- Панель Фильтров -->
-    <div class="filter-panel">
-        <input type="text" id="searchSkutitle" placeholder="Поиск по названию или артикулу..." oninput="loadProducts()">
-        
-        <select id="typeFilter" onchange="updateSubtypeFilter(); loadProducts();">
-            <option value="all">Все типы</option>
-            <option value="clothes">Одежда</option>
-            <option value="shoes">Обувь</option>
-            <option value="accessories">Аксессуары</option>
-        </select>
-
-        <select id="subtypeFilter" onchange="loadProducts()">
-            <option value="all">Все подкатегории</option>
-        </select>
-
-        <select id="brandFilter" onchange="loadProducts()">
-            <option value="all">Все бренды</option>
-            <option value="Nike">Nike</option>
-            <option value="Adidas">Adidas</option>
-            <option value="Puma">Puma</option>
-            <option value="Stone Island">Stone Island</option>
-            <option value="Jordan">Jordan</option>
-        </select>
-
-        <input type="text" id="sizeFilter" placeholder="Размер (S, M, 42...)" oninput="loadProducts()">
-
-        <div class="price-group">
-            <input type="number" id="priceFrom" placeholder="Мин грн" oninput="loadProducts()">
-            <input type="number" id="priceTo" placeholder="Макс грн" oninput="loadProducts()">
-        </div>
-    </div>
 
     <!-- Каталог -->
     <main class="catalog" id="productsContainer">
         <p>Загрузка товаров...</p>
     </main>
 
-    <!-- Модальное окно Настроек -->
+    <!-- Модальная вкладка ФИЛЬТРОВ -->
+    <div class="modal" id="filtersModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeFilters()">&times;</span>
+            <h3 id="lblFilterTitle">Фильтр товаров</h3>
+            
+            <div class="filter-group">
+                <div>
+                    <label>Поиск:</label>
+                    <input type="text" id="searchSkutitle" placeholder="Название или артикул..." oninput="loadProducts()">
+                </div>
+
+                <div>
+                    <label>Тип одежды:</label>
+                    <select id="typeFilter" onchange="updateSubtypeFilter(); loadProducts();">
+                        <option value="all">Все типы</option>
+                        <option value="clothes">Одежда</option>
+                        <option value="shoes">Обувь</option>
+                        <option value="accessories">Аксессуары</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Подкатегория:</label>
+                    <select id="subtypeFilter" onchange="loadProducts()">
+                        <option value="all">Все подкатегории</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Бренд:</label>
+                    <select id="brandFilter" onchange="loadProducts()">
+                        <option value="all">Все бренды</option>
+                        <option value="Nike">Nike</option>
+                        <option value="Adidas">Adidas</option>
+                        <option value="Puma">Puma</option>
+                        <option value="Stone Island">Stone Island</option>
+                        <option value="Jordan">Jordan</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Размер:</label>
+                    <input type="text" id="sizeFilter" placeholder="S, M, 42..." oninput="loadProducts()">
+                </div>
+
+                <div>
+                    <label>Бюджет (грн):</label>
+                    <div class="price-group">
+                        <input type="number" id="priceFrom" placeholder="От" oninput="loadProducts()">
+                        <input type="number" id="priceTo" placeholder="До" oninput="loadProducts()">
+                    </div>
+                </div>
+
+                <button class="btn-reset" onclick="resetFilters()">Сбросить фильтры</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно НАСТРОЕК -->
     <div class="modal" id="settingsModal">
         <div class="modal-content">
             <span class="modal-close" onclick="closeSettings()">&times;</span>
@@ -168,9 +202,9 @@
         let showOnlyFavs = false;
 
         const translations = {
-            ru: { heading: "Настройки", lang: "Язык:", theme: "Темная тема:", curr: "Валюта:", grid: "Сетка:", buy: "Купить в Telegram", empty: "Товары не найдены" },
-            uk: { heading: "Налаштування", lang: "Мова:", theme: "Темна тема:", curr: "Валюта:", grid: "Сітка:", buy: "Купити в Telegram", empty: "Товари не знайдені" },
-            en: { heading: "Settings", lang: "Language:", theme: "Dark Theme:", curr: "Currency:", grid: "Grid:", buy: "Buy in Telegram", empty: "No products found" }
+            ru: { heading: "Настройки", filterTitle: "Фильтр товаров", lang: "Язык:", theme: "Темная тема:", curr: "Валюта:", grid: "Сетка:", buy: "Купить в Telegram", empty: "Товары не найдены" },
+            uk: { heading: "Налаштування", filterTitle: "Фільтр товарів", lang: "Мова:", theme: "Темна тема:", curr: "Валюта:", grid: "Сітка:", buy: "Купити в Telegram", empty: "Товари не знайдені" },
+            en: { heading: "Settings", filterTitle: "Product Filter", lang: "Language:", theme: "Dark Theme:", curr: "Currency:", grid: "Grid:", buy: "Buy in Telegram", empty: "No products found" }
         };
 
         const subtypesData = {
@@ -178,6 +212,12 @@
             shoes: ['Кроссовки', 'Кеды', 'Ботинки', 'Тапочки'],
             accessories: ['Сумки / Рюкзаки', 'Кепки / Шапки', 'Носки', 'Другое']
         };
+
+        function openFilters() { document.getElementById('filtersModal').style.display = 'flex'; }
+        function closeFilters() { document.getElementById('filtersModal').style.display = 'none'; }
+
+        function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
+        function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
 
         function updateSubtypeFilter() {
             const type = document.getElementById('typeFilter').value;
@@ -190,12 +230,16 @@
             }
         }
 
-        function openSettings() { 
-            document.getElementById('settingsModal').style.display = 'flex'; 
-        }
-
-        function closeSettings() { 
-            document.getElementById('settingsModal').style.display = 'none'; 
+        function resetFilters() {
+            document.getElementById('searchSkutitle').value = '';
+            document.getElementById('typeFilter').value = 'all';
+            document.getElementById('subtypeFilter').value = 'all';
+            document.getElementById('brandFilter').value = 'all';
+            document.getElementById('sizeFilter').value = '';
+            document.getElementById('priceFrom').value = '';
+            document.getElementById('priceTo').value = '';
+            updateSubtypeFilter();
+            loadProducts();
         }
 
         function toggleTheme() {
@@ -207,6 +251,7 @@
             const lang = document.getElementById('langSelect').value;
             const t = translations[lang];
             document.getElementById('setHeading').innerText = t.heading;
+            document.getElementById('lblFilterTitle').innerText = t.filterTitle;
             document.getElementById('lblLang').innerText = t.lang;
             document.getElementById('lblTheme').innerText = t.theme;
             document.getElementById('lblCurrency').innerText = t.curr;
