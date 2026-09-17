@@ -1,426 +1,268 @@
 <!DOCTYPE html>
-<html lang="uk" data-theme="dark">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Odyag_brend_ua — Магазин</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f8fafc;
-            --accent-color: #38bdf8;
-            --border-color: #334155;
-            --input-bg: #0f172a;
-            --grid-cols: repeat(auto-fill, minmax(230px, 1fr));
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Odyag_brend_ua</title>
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-color: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-color: #38bdf8;
+      --accent-hover: #0284c7;
+      --border-color: #334155;
+    }
 
-        [data-theme="light"] {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-color: #0f172a;
-            --accent-color: #0284c7;
-            --border-color: #e2e8f0;
-            --input-bg: #f1f5f9;
-        }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
 
-        body { font-family: Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); margin: 0; padding: 20px; transition: background 0.3s, color 0.3s; }
-        
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color); gap: 10px; flex-wrap: wrap; }
-        h1 { margin: 0; color: var(--accent-color); font-size: 1.5rem; }
+    header {
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      background-color: #0b1120;
+    }
 
-        .header-actions { display: flex; gap: 8px; align-items: center; }
-        .settings-btn { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-color); padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .settings-btn:hover { border-color: var(--accent-color); }
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      color: var(--accent-color);
+    }
 
-        /* Модальные окна */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 100; }
-        .modal-content { background: var(--card-bg); padding: 25px; border-radius: 12px; width: 340px; border: 1px solid var(--border-color); position: relative; max-height: 90vh; overflow-y: auto; }
-        .modal-close { position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 1.2rem; font-weight: bold; }
+    .container {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
 
-        /* Поля фильтров в модалке */
-        .filter-group { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; }
-        .filter-group label { font-size: 0.85rem; font-weight: bold; opacity: 0.9; }
-        .filter-group input, .filter-group select { padding: 9px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--input-bg); color: var(--text-color); font-size: 0.9rem; width: 100%; box-sizing: border-box; }
-        
-        /* Цены в столбик */
-        .price-group-col { display: flex; flex-direction: column; gap: 8px; }
+    .controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
 
-        .btn-reset { background: #ef4444; color: #fff; border: none; padding: 10px; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+    input, select {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 10px 15px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
 
-        /* Каталог */
-        .catalog { display: grid; grid-template-columns: var(--grid-cols); gap: 20px; }
-        .card { background: var(--card-bg); border-radius: 10px; border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; position: relative; }
-        .card img { width: 100%; height: 240px; object-fit: cover; }
-        .card-body { padding: 12px; display: flex; flex-direction: column; flex-grow: 1; }
-        .card-title { font-weight: bold; margin-bottom: 6px; font-size: 1rem; }
-        .card-sku { font-size: 0.75rem; color: #94a3b8; margin-bottom: 6px; }
-        .card-price { color: var(--accent-color); font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; }
-        .card-info { font-size: 0.8rem; opacity: 0.8; margin-bottom: 4px; }
-        
-        .btn-buy { margin-top: auto; text-align: center; background: #24a1de; color: #fff; text-decoration: none; padding: 8px; border-radius: 6px; font-weight: bold; }
-        
-        /* Избранное */
-        .fav-btn { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); border: none; color: #fff; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; font-size: 1rem; display: flex; justify-content: center; align-items: center; }
-        .fav-btn.active { color: #ef4444; }
+    input:focus, select:focus {
+      border-color: var(--accent-color);
+    }
 
-        /* Ползунок темы */
-        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent-color); }
-        input:checked + .slider:before { transform: translateX(20px); }
-    </style>
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 25px;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .card img {
+      width: 100%;
+      height: 280px;
+      object-fit: cover;
+      background-color: #0b1120;
+    }
+
+    .card-body {
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 10px 0;
+    }
+
+    .card-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .card-price {
+      font-size: 20px;
+      font-weight: bold;
+      color: var(--accent-color);
+      margin-bottom: 15px;
+    }
+
+    .sizes-list {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+
+    .size-tag {
+      background-color: #334155;
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 4px;
+    }
+
+    .btn-buy {
+      margin-top: auto;
+      background-color: var(--accent-color);
+      color: #000;
+      text-decoration: none;
+      text-align: center;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background-color 0.2s;
+    }
+
+    .btn-buy:hover {
+      background-color: var(--accent-hover);
+      color: #fff;
+    }
+
+    .empty-msg {
+      text-align: center;
+      font-size: 18px;
+      color: var(--text-muted);
+      grid-column: 1 / -1;
+      padding: 50px 0;
+    }
+  </style>
 </head>
 <body>
 
-    <header>
-        <h1>Odyag_brend_ua</h1>
-        <div class="header-actions">
-            <button class="settings-btn" onclick="openFilters()">🔍 Фильтры</button>
-            <button class="settings-btn" onclick="toggleFavFilter()" id="favToggleBtn">❤️ Избранное (0)</button>
-            <button class="settings-btn" onclick="openSettings()">⚙️ Настройки</button>
-        </div>
-    </header>
+  <header>
+    <h1>Odyag_brend_ua</h1>
+  </header>
 
-    <!-- Каталог -->
-    <main class="catalog" id="productsContainer">
-        <p>Загрузка товаров...</p>
-    </main>
-
-    <!-- Модальное окно ФИЛЬТРОВ -->
-    <div class="modal" id="filtersModal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeFilters()">&times;</span>
-            <h3 id="lblFilterTitle">Фильтр товаров</h3>
-            
-            <div class="filter-group">
-                <div>
-                    <label>Поиск:</label>
-                    <input type="text" id="searchSkutitle" placeholder="Название или артикул..." oninput="loadProducts()">
-                </div>
-
-                <div>
-                    <label>Категория (Тип):</label>
-                    <select id="typeFilter" onchange="onTypeChange()">
-                        <option value="all">Все категории</option>
-                        <option value="clothes">Одежда</option>
-                        <option value="shoes">Обувь</option>
-                        <option value="accessories">Аксессуары</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label>Подкатегория:</label>
-                    <select id="subtypeFilter" onchange="loadProducts()">
-                        <option value="all">Все подкатегории</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label>Бренд:</label>
-                    <select id="brandFilter" onchange="loadProducts()">
-                        <option value="all">Все бренды</option>
-                        <option value="Nike">Nike</option>
-                        <option value="Adidas">Adidas</option>
-                        <option value="Puma">Puma</option>
-                        <option value="Stone Island">Stone Island</option>
-                        <option value="Jordan">Jordan</option>
-                        <option value="Другое">Другое</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label>Размер:</label>
-                    <select id="sizeFilter" onchange="loadProducts()">
-                        <option value="all">Все размеры</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label>Бюджет (грн):</label>
-                    <div class="price-group-col">
-                        <input type="number" id="priceFrom" placeholder="Минимум грн" oninput="loadProducts()">
-                        <input type="number" id="priceTo" placeholder="Максимум грн" oninput="loadProducts()">
-                    </div>
-                </div>
-
-                <button class="btn-reset" onclick="resetFilters()">Сбросить фильтры</button>
-            </div>
-        </div>
+  <div class="container">
+    <div class="controls">
+      <input type="text" id="searchInput" placeholder="Поиск по названию..." style="flex-grow: 1;">
+      <select id="categorySelect">
+        <option value="all">Все категории</option>
+        <option value="clothes">Одежда</option>
+        <option value="shoes">Обувь</option>
+        <option value="accessories">Аксессуары</option>
+      </select>
     </div>
 
-    <!-- Модальное окно НАСТРОЕК -->
-    <div class="modal" id="settingsModal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeSettings()">&times;</span>
-            <h3 id="setHeading">Настройки</h3>
-            
-            <div style="margin-bottom: 15px;">
-                <label id="lblLang">Язык интерфейса:</label><br>
-                <select id="langSelect" onchange="changeLanguage()" style="width: 100%; margin-top: 5px;">
-                    <option value="ru">Русский</option>
-                    <option value="uk">Українська</option>
-                    <option value="en">English</option>
-                </select>
-            </div>
-
-            <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
-                <span id="lblTheme">Темная тема:</span>
-                <label class="switch">
-                    <input type="checkbox" id="themeToggle" onchange="toggleTheme()" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label id="lblCurrency">Валюта цен:</label><br>
-                <select id="currencySelect" onchange="loadProducts()" style="width: 100%; margin-top: 5px;">
-                    <option value="UAH">UAH (₴)</option>
-                    <option value="USD">USD ($)</option>
-                    <option value="EUR">EUR (€)</option>
-                </select>
-            </div>
-
-            <div style="margin-bottom: 15px;">
-                <label id="lblGrid">Сетка отображения:</label><br>
-                <select id="gridSelect" onchange="changeGrid()" style="width: 100%; margin-top: 5px;">
-                    <option value="auto">Стандартная</option>
-                    <option value="large">Крупная (2 в ряд)</option>
-                    <option value="small">Компактная (4 в ряд)</option>
-                </select>
-            </div>
-        </div>
+    <div class="grid" id="productsGrid">
+      <div class="empty-msg">Загрузка товаров...</div>
     </div>
+  </div>
 
-    <script>
-        const SUPABASE_URL = 'https://momhpeulxtwugqgcrvjs.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_K4Ds2nST2VYbNFodcp1FLA__uX00';
-        
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  <script>
+    // Подключение к Supabase с рабочими ключами
+    const SUPABASE_URL = 'https://momhpeulxtwugqgcrvjs.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vbWhwZXVseHR3dWdxZ2NydmpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NDAxMTgsImV4cCI6MjEwNTIxNjExOH0.42x9SWmfP74egl8WEgItTX2_FHeazFrofoRa2ohNSok';
 
-        let favorites = JSON.parse(localStorage.getItem('favs') || '[]');
-        let showOnlyFavs = false;
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const translations = {
-            ru: { heading: "Настройки", filterTitle: "Фильтр товаров", lang: "Язык:", theme: "Темная тема:", curr: "Валюта:", grid: "Сетка:", buy: "Купить в Telegram", empty: "Товары не найдены" },
-            uk: { heading: "Налаштування", filterTitle: "Фільтр товарів", lang: "Мова:", theme: "Темна тема:", curr: "Валюта:", grid: "Сітка:", buy: "Купити в Telegram", empty: "Товари не знайдені" },
-            en: { heading: "Settings", filterTitle: "Product Filter", lang: "Language:", theme: "Dark Theme:", curr: "Currency:", grid: "Grid:", buy: "Buy in Telegram", empty: "No products found" }
-        };
+    let allProducts = [];
 
-        // Структура подкатегорий
-        const subtypesData = {
-            clothes: ['Штаны', 'Худи / Свитшоты', 'Куртки / Ветровки', 'Футболки', 'Шорты'],
-            shoes: ['Кроссовки', 'Кеды', 'Ботинки', 'Тапочки'],
-            accessories: ['Сумки / Рюкзаки', 'Кепки / Шапки', 'Носки', 'Другое']
-        };
+    // Функция загрузки товаров из БД
+    async function loadProducts() {
+      const grid = document.getElementById('productsGrid');
+      
+      try {
+        const { data, error } = await supabaseClient
+          .from('products')
+          .select('*')
+          .order('id', { ascending: false });
 
-        // Списки размеров
-        const sizesData = {
-            clothes: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'],
-            shoes: ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'],
-            accessories: ['One Size', 'S/M', 'L/XL']
-        };
+        if (error) throw error;
 
-        function openFilters() { document.getElementById('filtersModal').style.display = 'flex'; }
-        function closeFilters() { document.getElementById('filtersModal').style.display = 'none'; }
+        allProducts = data || [];
+        renderProducts(allProducts);
 
-        function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
-        function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+      } catch (err) {
+        console.error('Ошибка загрузки товаров:', err);
+        grid.innerHTML = `<div class="empty-msg">Ошибка загрузки товаров: ${err.message}</div>`;
+      }
+    }
 
-        // Обновление подкатегорий и размеров при выборе типа товара
-        function onTypeChange() {
-            updateSubtypeFilter();
-            updateSizeFilter();
-            loadProducts();
-        }
+    // Функция отрисовки товаров
+    function renderProducts(products) {
+      const grid = document.getElementById('productsGrid');
+      grid.innerHTML = '';
 
-        function updateSubtypeFilter() {
-            const type = document.getElementById('typeFilter').value;
-            const subSelect = document.getElementById('subtypeFilter');
-            subSelect.innerHTML = '<option value="all">Все подкатегории</option>';
-            
-            if (type !== 'all' && subtypesData[type]) {
-                subtypesData[type].forEach(s => {
-                    subSelect.innerHTML += `<option value="${s}">${s}</option>`;
-                });
-            }
-        }
+      if (products.length === 0) {
+        grid.innerHTML = '<div class="empty-msg">Товары не найдены</div>';
+        return;
+      }
 
-        function updateSizeFilter() {
-            const type = document.getElementById('typeFilter').value;
-            const sizeSelect = document.getElementById('sizeFilter');
-            sizeSelect.innerHTML = '<option value="all">Все размеры</option>';
+      products.forEach(p => {
+        const sizesHtml = p.sizes && Array.isArray(p.sizes) 
+          ? p.sizes.map(s => `<span class="size-tag">${s}</span>`).join('') 
+          : '';
 
-            if (type !== 'all' && sizesData[type]) {
-                sizesData[type].forEach(sz => {
-                    sizeSelect.innerHTML += `<option value="${sz}">${sz}</option>`;
-                });
-            } else {
-                // Если тип = "все", показываем все варианты по группам
-                let clothesOpts = sizesData.clothes.map(s => `<option value="${s}">${s}</option>`).join('');
-                let shoesOpts = sizesData.shoes.map(s => `<option value="${s}">${s}</option>`).join('');
-                let accOpts = sizesData.accessories.map(s => `<option value="${s}">${s}</option>`).join('');
-                
-                sizeSelect.innerHTML += `<optgroup label="Одежда">${clothesOpts}</optgroup>`;
-                sizeSelect.innerHTML += `<optgroup label="Обувь (EUR)">${shoesOpts}</optgroup>`;
-                sizeSelect.innerHTML += `<optgroup label="Аксессуары">${accOpts}</optgroup>`;
-            }
-        }
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${p.image_url || 'https://via.placeholder.com/300'}" alt="${p.title}">
+          <div class="card-body">
+            <h3 class="card-title">${p.title}</h3>
+            <div class="card-meta">Бренд: ${p.brand || '—'} | Категория: ${p.category || '—'}</div>
+            <div class="card-price">${p.price} грн</div>
+            ${sizesHtml ? `<div class="sizes-list">${sizesHtml}</div>` : ''}
+            <a href="${p.tg_link || '#'}" target="_blank" class="btn-buy">Купить в Telegram</a>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
 
-        function resetFilters() {
-            document.getElementById('searchSkutitle').value = '';
-            document.getElementById('typeFilter').value = 'all';
-            document.getElementById('subtypeFilter').value = 'all';
-            document.getElementById('brandFilter').value = 'all';
-            document.getElementById('priceFrom').value = '';
-            document.getElementById('priceTo').value = '';
-            onTypeChange();
-        }
+    // Фильтрация и поиск
+    document.getElementById('searchInput').addEventListener('input', filterProducts);
+    document.getElementById('categorySelect').addEventListener('change', filterProducts);
 
-        function toggleTheme() {
-            const isDark = document.getElementById('themeToggle').checked;
-            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-        }
+    function filterProducts() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const category = document.getElementById('categorySelect').value;
 
-        function changeLanguage() {
-            const lang = document.getElementById('langSelect').value;
-            const t = translations[lang];
-            document.getElementById('setHeading').innerText = t.heading;
-            document.getElementById('lblFilterTitle').innerText = t.filterTitle;
-            document.getElementById('lblLang').innerText = t.lang;
-            document.getElementById('lblTheme').innerText = t.theme;
-            document.getElementById('lblCurrency').innerText = t.curr;
-            document.getElementById('lblGrid').innerText = t.grid;
-            loadProducts();
-        }
+      const filtered = allProducts.filter(p => {
+        const matchTitle = (p.title || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search);
+        const matchCategory = category === 'all' || p.category === category;
+        return matchTitle && matchCategory;
+      });
 
-        function changeGrid() {
-            const val = document.getElementById('gridSelect').value;
-            const root = document.documentElement;
-            if (val === 'large') root.style.setProperty('--grid-cols', 'repeat(auto-fill, minmax(320px, 1fr))');
-            else if (val === 'small') root.style.setProperty('--grid-cols', 'repeat(auto-fill, minmax(180px, 1fr))');
-            else root.style.setProperty('--grid-cols', 'repeat(auto-fill, minmax(230px, 1fr))');
-        }
+      renderProducts(filtered);
+    }
 
-        function toggleFav(id) {
-            if (favorites.includes(id)) favorites = favorites.filter(item => item !== id);
-            else favorites.push(id);
-            localStorage.setItem('favs', JSON.stringify(favorites));
-            updateFavBtn();
-            loadProducts();
-        }
-
-        function updateFavBtn() {
-            document.getElementById('favToggleBtn').innerText = `❤️ Избранное (${favorites.length})`;
-        }
-
-        function toggleFavFilter() {
-            showOnlyFavs = !showOnlyFavs;
-            document.getElementById('favToggleBtn').style.background = showOnlyFavs ? '#ef4444' : '';
-            loadProducts();
-        }
-
-        // Форматирование вывода размеров
-        function formatSizes(sizes, category, subtype, brand) {
-            if (!sizes || !Array.isArray(sizes) || sizes.length === 0) return 'Н/Д';
-            
-            return sizes.map(s => {
-                const cleanSize = String(s).trim();
-                if (/^\d+$/.test(cleanSize)) {
-                    return `${category || 'Обувь'}-${brand || 'Бренд'}-${cleanSize}`;
-                } 
-                return `${category || 'Одежда'}-${subtype || 'Товар'}-${cleanSize.toUpperCase()}`;
-            }).join(', ');
-        }
-
-        async function loadProducts() {
-            const container = document.getElementById('productsContainer');
-            const search = document.getElementById('searchSkutitle').value.toLowerCase().trim();
-            const type = document.getElementById('typeFilter').value;
-            const subtype = document.getElementById('subtypeFilter').value;
-            const brand = document.getElementById('brandFilter').value;
-            const selectedSize = document.getElementById('sizeFilter').value;
-            const priceFrom = parseFloat(document.getElementById('priceFrom').value) || 0;
-            const priceTo = parseFloat(document.getElementById('priceTo').value) || Infinity;
-            const currency = document.getElementById('currencySelect').value;
-            const lang = document.getElementById('langSelect').value;
-
-            let { data, error } = await supabaseClient.from('products').select('*');
-
-            if (error || !data) {
-                container.innerHTML = `<p>${translations[lang].empty}</p>`;
-                return;
-            }
-
-            // Фильтрация
-            data = data.filter(item => {
-                if (showOnlyFavs && !favorites.includes(item.id)) return false;
-                if (type !== 'all' && item.category !== type) return false;
-                if (subtype !== 'all' && item.subtype !== subtype) return false;
-                
-                // Фильтр по бренду
-                if (brand !== 'all') {
-                    if (brand === 'Другое') {
-                        // Показываем товары, у которых бренд не входит в стандартный список
-                        const knownBrands = ['Nike', 'Adidas', 'Puma', 'Stone Island', 'Jordan'];
-                        if (knownBrands.includes(item.brand)) return false;
-                    } else if (item.brand !== brand) {
-                        return false;
-                    }
-                }
-
-                if (search && !(item.title.toLowerCase().includes(search) || (item.sku && item.sku.toLowerCase().includes(search)))) return false;
-                
-                // Фильтр по размеру
-                if (selectedSize !== 'all') {
-                    if (!item.sizes || !Array.isArray(item.sizes)) return false;
-                    const hasSize = item.sizes.some(s => String(s).toUpperCase() === selectedSize.toUpperCase());
-                    if (!hasSize) return false;
-                }
-
-                if (item.price < priceFrom || item.price > priceTo) return false;
-                return true;
-            });
-
-            if (data.length === 0) {
-                container.innerHTML = `<p>${translations[lang].empty}</p>`;
-                return;
-            }
-
-            // Конвертация валюты
-            let rate = 1, symbol = '₴';
-            if (currency === 'USD') { rate = 0.024; symbol = '$'; }
-            if (currency === 'EUR') { rate = 0.022; symbol = '€'; }
-
-            container.innerHTML = data.map(item => {
-                const isFav = favorites.includes(item.id);
-                const displayPrice = Math.round((item.price || 0) * rate);
-                const formattedSizes = formatSizes(item.sizes, item.category, item.subtype, item.brand);
-
-                return `
-                    <div class="card">
-                        <button class="fav-btn ${isFav ? 'active' : ''}" onclick="toggleFav(${item.id})">♥</button>
-                        <img src="${item.image_url}" alt="${item.title}">
-                        <div class="card-body">
-                            <div class="card-sku">Арт: ${item.sku || 'N/A'}</div>
-                            <div class="card-title">${item.title}</div>
-                            <div class="card-price">${displayPrice} ${symbol}</div>
-                            <div class="card-info"><b>Размеры:</b> ${formattedSizes}</div>
-                            <div class="card-info"><b>Бренд:</b> ${item.brand || '—'}</div>
-                            <a href="${item.tg_link}" target="_blank" class="btn-buy">${translations[lang].buy}</a>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Инициализация стартовых значений
-        updateSizeFilter();
-        updateFavBtn();
-        loadProducts();
-    </script>
+    // Старт
+    loadProducts();
+  </script>
 </body>
 </html>
