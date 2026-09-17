@@ -133,7 +133,7 @@
             <div style="margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
                 <span id="lblTheme">Темная тема:</span>
                 <label class="switch">
-                    <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
+                    <input type="checkbox" id="themeToggle" onchange="toggleTheme()" checked>
                     <span class="slider"></span>
                 </label>
             </div>
@@ -161,7 +161,8 @@
     <script>
         const SUPABASE_URL = 'https://momhpeulxtwugqgcrvjs.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_K4Ds2nST2VYbNFodcp1FLA__uX00';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let favorites = JSON.parse(localStorage.getItem('favs') || '[]');
         let showOnlyFavs = false;
@@ -189,8 +190,13 @@
             }
         }
 
-        function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
-        function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+        function openSettings() { 
+            document.getElementById('settingsModal').style.display = 'flex'; 
+        }
+
+        function closeSettings() { 
+            document.getElementById('settingsModal').style.display = 'none'; 
+        }
 
         function toggleTheme() {
             const isDark = document.getElementById('themeToggle').checked;
@@ -246,7 +252,7 @@
             const currency = document.getElementById('currencySelect').value;
             const lang = document.getElementById('langSelect').value;
 
-            let { data, error } = await supabase.from('products').select('*');
+            let { data, error } = await supabaseClient.from('products').select('*');
 
             if (error || !data) {
                 container.innerHTML = `<p>${translations[lang].empty}</p>`;
