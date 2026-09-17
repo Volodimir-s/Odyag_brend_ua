@@ -1,540 +1,438 @@
 <!DOCTYPE html>
-<html lang="ru" data-theme="light">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Панель администратора — Odyag_brend_ua</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <style>
-        :root {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-color: #0f172a;
-            --accent-color: #0284c7;
-            --border-color: #e2e8f0;
-            --input-bg: #f1f5f9;
-            --danger-color: #ef4444;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель — Odyag_brend_ua</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-color: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-color: #0284c7;
+      --accent-hover: #0369a1;
+      --danger-color: #ef4444;
+      --danger-hover: #dc2626;
+      --border-color: #334155;
+    }
 
-        [data-theme="dark"] {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f8fafc;
-            --accent-color: #38bdf8;
-            --border-color: #334155;
-            --input-bg: #0f172a;
-            --danger-color: #ef4444;
-        }
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            transition: background 0.3s, color 0.3s;
-        }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
 
-        .admin-container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
+    h1, h2 {
+      color: #38bdf8;
+      margin-bottom: 20px;
+    }
 
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
-        }
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 25px;
+      margin-bottom: 30px;
+    }
 
-        h1, h2 {
-            color: var(--accent-color);
-            margin: 0;
-        }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
 
-        .theme-switch-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-            font-weight: bold;
-        }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
 
-        .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 20px; }
-        .slider:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent-color); }
-        input:checked + .slider:before { transform: translateX(20px); }
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
 
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
+    label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 15px;
-        }
+    input, select {
+      background-color: #0f172a;
+      border: 1px solid var(--border-color);
+      color: var(--text-color);
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      outline: none;
+    }
 
-        @media (max-width: 600px) {
-            .form-grid { grid-template-columns: 1fr; }
-        }
+    input:focus, select:focus {
+      border-color: var(--accent-color);
+    }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
+    .sizes-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 5px;
+    }
 
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
+    .size-checkbox-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: #0f172a;
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      user-select: none;
+    }
 
-        label {
-            font-size: 0.85rem;
-            font-weight: bold;
-            opacity: 0.9;
-        }
+    .size-checkbox-label input {
+      display: none;
+    }
 
-        input, select {
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: var(--input-bg);
-            color: var(--text-color);
-            font-size: 0.95rem;
-            width: 100%;
-            box-sizing: border-box;
-        }
+    .size-checkbox-label.active {
+      background-color: var(--accent-color);
+      border-color: var(--accent-color);
+      color: #fff;
+    }
 
-        .sizes-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 5px;
-        }
+    .btn-submit {
+      background-color: var(--accent-color);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+      margin-top: 15px;
+      transition: background 0.2s;
+    }
 
-        .size-checkbox { display: none; }
+    .btn-submit:hover {
+      background-color: var(--accent-hover);
+    }
 
-        .size-label {
-            padding: 6px 12px;
-            background: var(--input-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            user-select: none;
-            transition: 0.2s;
-        }
+    .product-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background-color: #0f172a;
+      border: 1px solid var(--border-color);
+      padding: 12px 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
 
-        .size-checkbox:checked + .size-label {
-            background: var(--accent-color);
-            color: #fff;
-            font-weight: bold;
-            border-color: var(--accent-color);
-        }
+    .product-info {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
 
-        .btn-submit {
-            background: var(--accent-color);
-            color: #fff;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
-        }
+    .product-img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
 
-        .btn-submit:hover { opacity: 0.9; }
+    .btn-delete {
+      background-color: var(--danger-color);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
 
-        .list-filters {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-        }
+    .btn-delete:hover {
+      background-color: var(--danger-hover);
+    }
 
-        .product-list-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 0;
-            border-bottom: 1px solid var(--border-color);
-            gap: 12px;
-        }
-
-        .product-list-item img {
-            width: 55px;
-            height: 55px;
-            object-fit: cover;
-            border-radius: 6px;
-        }
-
-        .product-info { flex-grow: 1; }
-        .product-title { font-weight: bold; margin-bottom: 4px; }
-        .product-meta { font-size: 0.8rem; opacity: 0.7; }
-
-        .btn-delete {
-            background: var(--danger-color);
-            color: #fff;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-    </style>
+    .filter-bar {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+  </style>
 </head>
 <body>
 
-<div class="admin-container">
-    <header>
-        <h1>🛠 Панель администратора</h1>
-        <div class="theme-switch-wrapper">
-            <span>Тёмная тема</span>
-            <label class="switch">
-                <input type="checkbox" id="themeToggle" onchange="toggleTheme()">
-                <span class="slider"></span>
-            </label>
+<div class="container">
+  <h1>Панель управления товарами</h1>
+
+  <!-- Форма добавления -->
+  <div class="card">
+    <h2>Добавить новый товар</h2>
+    <form id="addForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Название товара *</label>
+          <input type="text" id="title" placeholder="например, Кроссовки Nike Air Force 1" required>
         </div>
-    </header>
 
-    <!-- Форма добавления товара -->
-    <div class="card">
-        <h2>Добавить новый товар</h2>
-        <form id="addProductForm">
-            <div class="form-grid">
-                
-                <div class="form-group">
-                    <label for="title">Название товара *</label>
-                    <input type="text" id="title" required placeholder="например, Кроссовки Nike Air Force 1">
-                </div>
+        <div class="form-group">
+          <label>Артикул (SKU)</label>
+          <input type="text" id="sku" placeholder="например, NK-1029">
+        </div>
 
-                <div class="form-group">
-                    <label for="sku">Артикул (SKU)</label>
-                    <input type="text" id="sku" placeholder="например, NK-1029">
-                </div>
+        <div class="form-group">
+          <label>Категория *</label>
+          <select id="category" required onchange="updateSizesUI()">
+            <option value="clothes">Одежда</option>
+            <option value="shoes">Обувь</option>
+            <option value="accessories">Аксессуары</option>
+          </select>
+        </div>
 
-                <div class="form-group">
-                    <label for="category">Категория *</label>
-                    <select id="category" onchange="onCategoryChange()" required>
-                        <option value="clothes">Одежда</option>
-                        <option value="shoes">Обувь</option>
-                        <option value="accessories">Аксессуары</option>
-                    </select>
-                </div>
+        <div class="form-group">
+          <label>Бренд *</label>
+          <select id="brand" required>
+            <option value="Nike">Nike</option>
+            <option value="Adidas">Adidas</option>
+            <option value="Puma">Puma</option>
+            <option value="Reebok">Reebok</option>
+            <option value="New Balance">New Balance</option>
+            <option value="Jordan">Jordan</option>
+            <option value="Under Armour">Under Armour</option>
+            <option value="Stone Island">Stone Island</option>
+            <option value="The North Face">The North Face</option>
+            <option value="Tommy Hilfiger">Tommy Hilfiger</option>
+            <option value="Calvin Klein">Calvin Klein</option>
+            <option value="Gucci">Gucci</option>
+            <option value="Balenciaga">Balenciaga</option>
+            <option value="Zara">Zara</option>
+            <option value="Другое">Другое</option>
+          </select>
+        </div>
 
-                <div class="form-group">
-                    <label for="subtype">Подкатегория *</label>
-                    <select id="subtype" required></select>
-                </div>
+        <div class="form-group">
+          <label>Цена (грн) *</label>
+          <input type="number" id="price" placeholder="1500" required>
+        </div>
 
-                <div class="form-group">
-                    <label for="brandSelect">Бренд *</label>
-                    <select id="brandSelect" onchange="toggleCustomBrand()" required>
-                        <option value="Nike">Nike</option>
-                        <option value="Adidas">Adidas</option>
-                        <option value="Puma">Puma</option>
-                        <option value="Stone Island">Stone Island</option>
-                        <option value="Jordan">Jordan</option>
-                        <option value="custom">-- Ввести свой бренд --</option>
-                    </select>
-                </div>
+        <div class="form-group">
+          <label>Ссылка на изображение (URL) *</label>
+          <input type="url" id="imageUrl" placeholder="https://..." required>
+        </div>
 
-                <div class="form-group" id="customBrandGroup" style="display: none;">
-                    <label for="customBrandInput">Свой бренд</label>
-                    <input type="text" id="customBrandInput" placeholder="Введите название бренда">
-                </div>
+        <div class="form-group full-width">
+          <label>Ссылка на покупку в Telegram *</label>
+          <input type="url" id="tgLink" placeholder="https://t.me/your_manager" required>
+        </div>
 
-                <div class="form-group">
-                    <label for="price">Цена (грн) *</label>
-                    <input type="number" id="price" required placeholder="1500">
-                </div>
+        <div class="form-group full-width">
+          <label>Выберите доступные размеры *</label>
+          <div class="sizes-container" id="sizesContainer">
+            <!-- Генерируется через JS -->
+          </div>
+        </div>
+      </div>
 
-                <div class="form-group">
-                    <label for="imageFile">Выбрать фото из галереи *</label>
-                    <input type="file" id="imageFile" accept="image/*" required>
-                </div>
+      <button type="submit" class="btn-submit" id="btnPublish">Опубликовать товар</button>
+    </form>
+  </div>
 
-                <div class="form-group full-width">
-                    <label for="tg_link">Ссылка на покупку в Telegram *</label>
-                    <input type="url" id="tg_link" required placeholder="https://t.me/your_manager">
-                </div>
-
-                <div class="form-group full-width">
-                    <label>Выберите доступные размеры *</label>
-                    <div class="sizes-grid" id="sizesContainer"></div>
-                </div>
-
-            </div>
-
-            <button type="submit" class="btn-submit" id="submitBtn">➕ Опубликовать товар</button>
-        </form>
+  <!-- Список товаров -->
+  <div class="card">
+    <h2>Список товаров в базе (<span id="totalCount">0</span>)</h2>
+    
+    <div class="filter-bar">
+      <input type="text" id="adminSearch" placeholder="Поиск по названию/артикулу..." oninput="renderAdminList()">
+      <select id="adminCatFilter" onchange="renderAdminList()">
+        <option value="all">Все категории</option>
+        <option value="clothes">Одежда</option>
+        <option value="shoes">Обувь</option>
+        <option value="accessories">Аксессуары</option>
+      </select>
+      <select id="adminSort" onchange="renderAdminList()">
+        <option value="new">Сначала новые</option>
+        <option value="old">Сначала старые</option>
+      </select>
     </div>
 
-    <!-- Список товаров в базе с фильтрацией -->
-    <div class="card">
-        <h2>Список товаров в базе (<span id="totalCount">0</span>)</h2>
-        
-        <div class="list-filters" style="margin-top: 15px;">
-            <input type="text" id="adminSearch" placeholder="Поиск по названию/артикулу..." oninput="renderAdminProducts()">
-            
-            <select id="adminCatFilter" onchange="renderAdminProducts()">
-                <option value="all">Все категории</option>
-                <option value="clothes">Одежда</option>
-                <option value="shoes">Обувь</option>
-                <option value="accessories">Аксессуары</option>
-            </select>
-
-            <select id="adminSort" onchange="renderAdminProducts()">
-                <option value="newest">Сначала новые (по дате)</option>
-                <option value="oldest">Сначала старые (по дате)</option>
-                <option value="price_asc">Цена: от дешевых</option>
-                <option value="price_desc">Цена: от дорогих</option>
-            </select>
-        </div>
-
-        <div id="adminProductsContainer">
-            <p>Загрузка товаров...</p>
-        </div>
-    </div>
+    <div id="productList">Загрузка...</div>
+  </div>
 </div>
 
 <script>
-    const SUPABASE_URL = 'https://momhpeulxtwugqgcrvjs.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vbWhwZXVseHR3dWdxZ2NydmpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NDAxMTgsImV4cCI6MjEwNTIxNjExOH0.42x9SWmfP74egl8WEgItTX2_FHeazFrofoRa2ohNSok';
-    
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const SUPABASE_URL = 'https://momhpeulxtwugqgcrvjs.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vbWhwZXVseHR3dWdxZ2NydmpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NDAxMTgsImV4cCI6MjEwNTIxNjExOH0.42x9SWmfP74egl8WEgItTX2_FHeazFrofoRa2ohNSok';
 
-    let rawProductsData = [];
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const subtypesData = {
-        clothes: ['Штаны', 'Худи / Свитшоты', 'Куртки / Ветровки', 'Футболки', 'Шорты'],
-        shoes: ['Кроссовки', 'Кеды', 'Ботинки', 'Тапочки'],
-        accessories: ['Сумки / Рюкзаки', 'Кепки / Шапки', 'Носки', 'Другое']
-    };
+  const CLOTHES_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', 'One Size'];
+  const SHOE_SIZES = [
+    '35', '35.5', '36', '36.5', '37', '37.5', '38', '38.5', '39', '39.5',
+    '40', '40.5', '41', '41.5', '42', '42.5', '43', '43.5', '44', '44.5',
+    '45', '45.5', '46', '46.5'
+  ];
 
-    const sizesData = {
-        clothes: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'],
-        shoes: ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'],
-        accessories: ['One Size', 'S/M', 'L/XL']
-    };
+  let rawProducts = [];
 
-    function toggleTheme() {
-        const isDark = document.getElementById('themeToggle').checked;
-        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  function updateSizesUI() {
+    const cat = document.getElementById('category').value;
+    const container = document.getElementById('sizesContainer');
+    container.innerHTML = '';
+
+    let sizes = cat === 'shoes' ? SHOE_SIZES : CLOTHES_SIZES;
+
+    sizes.forEach(size => {
+      const label = document.createElement('label');
+      label.className = 'size-checkbox-label';
+      label.innerHTML = `
+        <input type="checkbox" value="${size}" onchange="this.parentElement.classList.toggle('active', this.checked)">
+        ${size}
+      `;
+      container.appendChild(label);
+    });
+  }
+
+  async function loadAdminProducts() {
+    const listDiv = document.getElementById('productList');
+    try {
+      const { data, error } = await supabaseClient
+        .from('products')
+        .select('*')
+        .order('id', { ascending: false });
+
+      if (error) throw error;
+      rawProducts = data || [];
+      renderAdminList();
+    } catch (err) {
+      console.error(err);
+      listDiv.innerHTML = `<div style="color:red">Ошибка загрузки: ${err.message}</div>`;
     }
+  }
 
-    function onCategoryChange() {
-        const cat = document.getElementById('category').value;
-        
-        const subSelect = document.getElementById('subtype');
-        subSelect.innerHTML = '';
-        if (subtypesData[cat]) {
-            subtypesData[cat].forEach(sub => {
-                subSelect.innerHTML += `<option value="${sub}">${sub}</option>`;
-            });
-        }
+  function renderAdminList() {
+    const listDiv = document.getElementById('productList');
+    const search = document.getElementById('adminSearch').value.toLowerCase();
+    const cat = document.getElementById('adminCatFilter').value;
+    const sort = document.getElementById('adminSort').value;
 
-        const sizesContainer = document.getElementById('sizesContainer');
-        sizesContainer.innerHTML = '';
-        if (sizesData[cat]) {
-            sizesData[cat].forEach(sz => {
-                sizesContainer.innerHTML += `
-                    <input type="checkbox" id="size_${sz}" value="${sz}" class="size-checkbox" name="selected_sizes">
-                    <label for="size_${sz}" class="size-label">${sz}</label>
-                `;
-            });
-        }
-    }
-
-    function toggleCustomBrand() {
-        const select = document.getElementById('brandSelect');
-        const customGroup = document.getElementById('customBrandGroup');
-        customGroup.style.display = (select.value === 'custom') ? 'flex' : 'none';
-    }
-
-    // Загрузка файла с очисткой имени от кириллицы и спецсимволов
-    async function uploadImage(file) {
-        const fileExt = file.name.split('.').pop().toLowerCase();
-        const cleanFileName = `img_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
-
-        const { data, error } = await supabaseClient.storage
-            .from('product-images')
-            .upload(cleanFileName, file, {
-                contentType: file.type,
-                upsert: false
-            });
-
-        if (error) {
-            throw new Error('Ошибка загрузки фото: ' + error.message);
-        }
-
-        const { data: publicUrlData } = supabaseClient.storage
-            .from('product-images')
-            .getPublicUrl(cleanFileName);
-
-        return publicUrlData.publicUrl;
-    }
-
-    async function fetchAdminProducts() {
-        let { data, error } = await supabaseClient.from('products').select('*');
-
-        if (error) {
-            document.getElementById('adminProductsContainer').innerHTML = '<p>Ошибка загрузки данных</p>';
-            return;
-        }
-
-        rawProductsData = data || [];
-        renderAdminProducts();
-    }
-
-    function renderAdminProducts() {
-        const container = document.getElementById('adminProductsContainer');
-        const countSpan = document.getElementById('totalCount');
-        
-        const search = document.getElementById('adminSearch').value.toLowerCase().trim();
-        const catFilter = document.getElementById('adminCatFilter').value;
-        const sortType = document.getElementById('adminSort').value;
-
-        let filtered = [...rawProductsData];
-
-        if (search) {
-            filtered = filtered.filter(p => 
-                (p.title && p.title.toLowerCase().includes(search)) || 
-                (p.sku && p.sku.toLowerCase().includes(search))
-            );
-        }
-
-        if (catFilter !== 'all') {
-            filtered = filtered.filter(p => p.category === catFilter);
-        }
-
-        if (sortType === 'newest') {
-            filtered.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-        } else if (sortType === 'oldest') {
-            filtered.sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
-        } else if (sortType === 'price_asc') {
-            filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
-        } else if (sortType === 'price_desc') {
-            filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
-        }
-
-        countSpan.innerText = filtered.length;
-
-        if (filtered.length === 0) {
-            container.innerHTML = '<p>Товары не найдены</p>';
-            return;
-        }
-
-        container.innerHTML = filtered.map(item => `
-            <div class="product-list-item">
-                <img src="${item.image_url}" alt="${item.title}" onerror="this.src='https://via.placeholder.com/50'">
-                <div class="product-info">
-                    <div class="product-title">${item.title}</div>
-                    <div class="product-meta">
-                        Категория: ${item.category} (${item.subtype}) | Бренд: ${item.brand} | Цена: ${item.price} грн | Размеры: ${Array.isArray(item.sizes) ? item.sizes.join(', ') : '—'}
-                    </div>
-                </div>
-                <button class="btn-delete" onclick="deleteProduct(${item.id})">Удалить</button>
-            </div>
-        `).join('');
-    }
-
-    async function deleteProduct(id) {
-        if (!confirm('Вы уверены, что хотите удалить этот товар?')) return;
-
-        const { error } = await supabaseClient.from('products').delete().eq('id', id);
-
-        if (error) {
-            alert('Ошибка при удалении: ' + error.message);
-        } else {
-            fetchAdminProducts();
-        }
-    }
-
-    document.getElementById('addProductForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const submitBtn = document.getElementById('submitBtn');
-        const fileInput = document.getElementById('imageFile');
-
-        if (!fileInput.files || fileInput.files.length === 0) {
-            alert('Выберите изображение из галереи!');
-            return;
-        }
-
-        const checkedSizes = Array.from(document.querySelectorAll('input[name="selected_sizes"]:checked')).map(cb => cb.value);
-
-        if (checkedSizes.length === 0) {
-            alert('Пожалуйста, выберите хотя бы один размер!');
-            return;
-        }
-
-        const brandSelectVal = document.getElementById('brandSelect').value;
-        const finalBrand = (brandSelectVal === 'custom') 
-            ? document.getElementById('customBrandInput').value.trim() 
-            : brandSelectVal;
-
-        if (!finalBrand) {
-            alert('Укажите бренд!');
-            return;
-        }
-
-        submitBtn.disabled = true;
-        submitBtn.innerText = 'Загрузка изображения...';
-
-        try {
-            const uploadedImageUrl = await uploadImage(fileInput.files[0]);
-
-            submitBtn.innerText = 'Сохранение товара...';
-
-            const newProduct = {
-                title: document.getElementById('title').value.trim(),
-                sku: document.getElementById('sku').value.trim() || null,
-                category: document.getElementById('category').value,
-                subtype: document.getElementById('subtype').value,
-                brand: finalBrand,
-                price: parseFloat(document.getElementById('price').value),
-                image_url: uploadedImageUrl,
-                tg_link: document.getElementById('tg_link').value.trim(),
-                sizes: checkedSizes
-            };
-
-            const { error } = await supabaseClient.from('products').insert([newProduct]);
-
-            if (error) {
-                alert('Ошибка сохранения товара: ' + error.message);
-            } else {
-                alert('Товар успешно добавлен!');
-                document.getElementById('addProductForm').reset();
-                onCategoryChange();
-                toggleCustomBrand();
-                fetchAdminProducts();
-            }
-        } catch (err) {
-            alert(err.message);
-        } finally {
-            submitBtn.disabled = false;
-            submitBtn.innerText = '➕ Опубликовать товар';
-        }
+    let items = rawProducts.filter(p => {
+      const matchText = (p.title || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search);
+      const matchCat = cat === 'all' || p.category === cat;
+      return matchText && matchCat;
     });
 
-    onCategoryChange();
-    fetchAdminProducts();
-</script>
+    if (sort === 'old') {
+      items.sort((a, b) => a.id - b.id);
+    } else {
+      items.sort((a, b) => b.id - a.id);
+    }
 
+    document.getElementById('totalCount').innerText = items.length;
+
+    if (items.length === 0) {
+      listDiv.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 20px;">Нет товаров</div>';
+      return;
+    }
+
+    listDiv.innerHTML = '';
+    items.forEach(prod => {
+      const div = document.createElement('div');
+      div.className = 'product-item';
+      
+      const sizesStr = prod.sizes && Array.isArray(prod.sizes) ? prod.sizes.join(', ') : '—';
+
+      div.innerHTML = `
+        <div class="product-info">
+          <img src="${prod.image_url || 'https://via.placeholder.com/50'}" class="product-img" alt="">
+          <div>
+            <strong>ID: ${prod.id} — ${prod.title}</strong>
+            <div style="font-size:12px; color: var(--text-muted); margin-top:2px;">
+              Категория: ${prod.category} | Бренд: ${prod.brand} | Цена: ${prod.price} грн | Размеры: ${sizesStr}
+            </div>
+          </div>
+        </div>
+        <button class="btn-delete" onclick="deleteProduct(${prod.id})">Удалить</button>
+      `;
+      listDiv.appendChild(div);
+    });
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm(`Вы действительно хотите удалить товар с ID: ${id}?`)) return;
+
+    try {
+      const { error } = await supabaseClient
+        .from('products')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert('Ошибка при удалении: ' + error.message);
+        console.error('Supabase Delete Error:', error);
+      } else {
+        alert('Товар успешно удален!');
+        loadAdminProducts();
+      }
+    } catch (err) {
+      alert('Сбой при выполнении операции!');
+      console.error(err);
+    }
+  }
+
+  document.getElementById('addForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnPublish');
+    btn.disabled = true;
+    btn.innerText = 'Сохранение...';
+
+    const selectedSizes = Array.from(document.querySelectorAll('#sizesContainer input:checked')).map(cb => cb.value);
+
+    const newProduct = {
+      title: document.getElementById('title').value,
+      sku: document.getElementById('sku').value,
+      category: document.getElementById('category').value,
+      brand: document.getElementById('brand').value,
+      price: parseFloat(document.getElementById('price').value),
+      image_url: document.getElementById('imageUrl').value,
+      tg_link: document.getElementById('tgLink').value,
+      sizes: selectedSizes
+    };
+
+    try {
+      const { error } = await supabaseClient
+        .from('products')
+        .insert([newProduct]);
+
+      if (error) throw error;
+
+      alert('Товар успешно добавлен!');
+      document.getElementById('addForm').reset();
+      updateSizesUI();
+      loadAdminProducts();
+    } catch (err) {
+      alert('Ошибка при добавлении: ' + err.message);
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = 'Опубликовать товар';
+    }
+  });
+
+  updateSizesUI();
+  loadAdminProducts();
+</script>
 </body>
 </html>
