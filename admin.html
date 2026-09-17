@@ -314,7 +314,7 @@
 
 <script>
     const SUPABASE_URL = 'https://momhpeulxtwugqgcrvjs.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_K4Ds2nST2VYbNFodcp1FLA__uX00';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vbWhwZXVseHR3dWdxZ2NydmpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NDAxMTgsImV4cCI6MjEwNTIxNjExOH0.42x9SWmfP74egl8WEgItTX2_FHeazFrofoRa2ohNSok';
     
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -366,7 +366,7 @@
         customGroup.style.display = (select.value === 'custom') ? 'flex' : 'none';
     }
 
-    // Загрузка файла с очисткой имени от русских букв и пробелов
+    // Загрузка файла с очисткой имени от кириллицы и спецсимволов
     async function uploadImage(file) {
         const fileExt = file.name.split('.').pop().toLowerCase();
         const cleanFileName = `img_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${fileExt}`;
