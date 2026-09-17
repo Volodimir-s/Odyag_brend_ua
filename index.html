@@ -1,73 +1,62 @@
 <!DOCTYPE html>
-<html lang="uk" data-theme="dark" data-lang="uk">
+<html lang="uk">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="pageTitle">Одяг Premium Взуття</title>
+  <title>Одяг Premium Взуття</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --bg-color: #0b1120;
+      --bg-color: #0f172a;
       --card-bg: #1e293b;
       --text-color: #f8fafc;
       --text-muted: #94a3b8;
-      --accent-color: #0284c7;
-      --accent-hover: #0369a1;
+      --accent-color: #38bdf8;
       --border-color: #334155;
-      --input-bg: #0f172a;
     }
 
-    [data-theme="light"] {
-      --bg-color: #f1f5f9;
+    body.light-theme {
+      --bg-color: #f8fafc;
       --card-bg: #ffffff;
       --text-color: #0f172a;
       --text-muted: #64748b;
       --accent-color: #0284c7;
-      --accent-hover: #0369a1;
-      --border-color: #cbd5e1;
-      --input-bg: #f8fafc;
+      --border-color: #e2e8f0;
     }
 
     body {
       margin: 0;
-      padding: 20px;
-      font-family: system-ui, -apple-system, sans-serif;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background-color: var(--bg-color);
       color: var(--text-color);
-      transition: background-color 0.2s, color 0.2s;
+      transition: background-color 0.3s, color 0.3s;
     }
 
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .header-bar {
+    header {
+      padding: 15px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-      gap: 12px;
+      border-bottom: 1px solid var(--border-color);
+      background-color: var(--card-bg);
     }
 
-    .logo {
+    h1 {
+      margin: 0;
       font-size: 22px;
-      font-weight: bold;
-      color: var(--text-color);
-      text-decoration: none;
+      color: var(--accent-color);
     }
 
-    .header-controls {
+    .header-btns {
       display: flex;
-      align-items: center;
       gap: 10px;
     }
 
-    .control-btn {
+    .btn-action {
       background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
       color: var(--text-color);
+      border: 1px solid var(--border-color);
       padding: 8px 16px;
       border-radius: 8px;
       cursor: pointer;
@@ -75,344 +64,594 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      transition: background 0.2s, border-color 0.2s;
     }
 
-    .control-btn:hover {
-      border-color: var(--accent-color);
+    .btn-action:hover {
+      background-color: var(--border-color);
     }
 
-    select.control-btn {
-      appearance: none;
-      padding-right: 28px;
-      background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-      background-repeat: no-repeat;
-      background-position: right 8px center;
-      background-size: 16px;
+    .container {
+      max-width: 1200px;
+      margin: 25px auto;
+      padding: 0 20px;
     }
 
-    .filter-section {
-      background-color: var(--card-bg);
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 24px;
-      display: grid;
-      grid-template-columns: 2fr 1fr 1fr;
-      gap: 16px;
+    .search-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 25px;
     }
 
     input, select {
-      background-color: var(--input-bg);
+      background-color: var(--card-bg);
       border: 1px solid var(--border-color);
       color: var(--text-color);
-      padding: 10px 12px;
+      padding: 10px 15px;
       border-radius: 8px;
       font-size: 14px;
       outline: none;
-      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      box-sizing: border-box;
+      width: 100%;
     }
 
-    .products-grid {
+    input:focus, select:focus {
+      border-color: var(--accent-color);
+    }
+
+    .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
       gap: 20px;
     }
 
-    .product-card {
+    .card {
       background-color: var(--card-bg);
       border: 1px solid var(--border-color);
       border-radius: 12px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      transition: transform 0.2s, box-shadow 0.2s;
     }
 
-    .product-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
-
-    .product-img-wrap {
+    .card img {
       width: 100%;
-      height: 240px;
-      background-color: var(--input-bg);
-      position: relative;
-    }
-
-    .product-img {
-      width: 100%;
-      height: 100%;
+      height: 260px;
       object-fit: cover;
+      background-color: #0b1120;
     }
 
-    .product-content {
-      padding: 16px;
+    .card-body {
+      padding: 15px;
       display: flex;
       flex-direction: column;
       flex-grow: 1;
     }
 
-    .product-title {
-      font-size: 16px;
-      font-weight: bold;
-      margin-bottom: 8px;
-    }
-
-    .product-info-row {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-
-    .product-price {
+    .card-title {
       font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 8px 0;
+    }
+
+    .card-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .card-price {
+      font-size: 20px;
       font-weight: bold;
       color: var(--accent-color);
-      margin: 12px 0;
+      margin-bottom: 12px;
     }
 
     .sizes-list {
       display: flex;
+      gap: 5px;
       flex-wrap: wrap;
-      gap: 4px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .size-tag {
+      background-color: var(--border-color);
       font-size: 11px;
-      background-color: var(--input-bg);
-      border: 1px solid var(--border-color);
-      padding: 2px 6px;
+      padding: 3px 7px;
       border-radius: 4px;
-      color: var(--text-muted);
     }
 
     .btn-buy {
-      display: block;
-      text-align: center;
+      margin-top: auto;
       background-color: var(--accent-color);
-      color: #fff;
+      color: #000;
       text-decoration: none;
+      text-align: center;
       padding: 10px;
       border-radius: 8px;
       font-weight: bold;
-      margin-top: auto;
-      transition: background 0.2s;
+      border: none;
     }
 
-    .btn-buy:hover {
-      background-color: var(--accent-hover);
+    /* Модальные окна */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
     }
 
-    @media (max-width: 768px) {
-      .filter-section {
-        grid-template-columns: 1fr;
-      }
+    .modal-content {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 25px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 420px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-height: 85vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 18px;
+      font-weight: bold;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+    }
+
+    .close-btn {
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--text-muted);
+    }
+
+    .filter-section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed var(--border-color);
+    }
+
+    .filter-section:last-of-type {
+      border-bottom: none;
+    }
+
+    .filter-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-color);
+    }
+
+    .price-inputs {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Список размеров в столбик */
+    .size-column-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 150px;
+      overflow-y: auto;
+      padding-right: 5px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 12px;
+      background-color: rgba(0,0,0,0.15);
+    }
+
+    .size-column-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .size-column-item input[type="checkbox"] {
+      width: auto;
+      cursor: pointer;
+    }
+
+    .setting-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .empty-msg {
+      text-align: center;
+      color: var(--text-muted);
+      grid-column: 1 / -1;
+      padding: 40px;
     }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="header-bar">
-    <a href="#" class="logo">Одяг Premium Взуття</a>
-    <div class="header-controls">
-      <select id="langSelect" class="control-btn" onchange="changeLanguage(this.value)">
-        <option value="uk">UA</option>
-        <option value="ru">RU</option>
-        <option value="en">EN</option>
-      </select>
-      <button class="control-btn" onclick="toggleTheme()" id="themeBtn">🌓</button>
+  <header>
+    <h1>Одяг Premium Взуття</h1>
+    <div class="header-btns">
+      <button class="btn-action" id="btnFilters" onclick="openFilters()">🔍 Фільтри</button>
+      <button class="btn-action" id="btnSettings" onclick="openSettings()">⚙️ Налаштування</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Пошук...">
+    </div>
+
+    <div class="grid" id="productsGrid">
+      <div class="empty-msg" id="msgLoading">Завантаження...</div>
     </div>
   </div>
 
-  <div class="filter-section">
-    <input type="text" id="searchInput" data-i18n-placeholder="searchPlaceholder" oninput="renderProducts()" placeholder="Пошук за назвою...">
-    <select id="catFilter" onchange="renderProducts()">
-      <option value="all" data-i18n="filterAllCats">Усі категорії</option>
-      <option value="clothes" data-i18n="catClothes">Одяг</option>
-      <option value="shoes" data-i18n="catShoes">Взуття</option>
-      <option value="accessories" data-i18n="catAccessories">Аксесуари</option>
-    </select>
-    <select id="sortFilter" onchange="renderProducts()">
-      <option value="new" data-i18n="sortNew">Спочатку нові</option>
-      <option value="old" data-i18n="sortOld">Спочатку старі</option>
-    </select>
-  </div>
-
-  <div id="productsContainer" class="products-grid">
-    <div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;" data-i18n="loading">Завантаження...</div>
-  </div>
-</div>
-
-<script>
-  const translations = {
-    uk: {
-      pageTitle: "Одяг Premium Взуття",
-      searchPlaceholder: "Пошук за назвою або артикулом...",
-      filterAllCats: "Усі категорії",
-      catClothes: "Одяг",
-      catShoes: "Взуття",
-      catAccessories: "Аксесуари",
-      sortNew: "Спочатку нові",
-      sortOld: "Спочатку старі",
-      loading: "Завантаження...",
-      noProducts: "Товари не знайдені",
-      brand: "Бренд:",
-      sizes: "Розміри:",
-      buyBtn: "Купити в Telegram"
-    },
-    ru: {
-      pageTitle: "Одяг Premium Взуття",
-      searchPlaceholder: "Поиск по названию или артикулу...",
-      filterAllCats: "Все категории",
-      catClothes: "Одежда",
-      catShoes: "Обувь",
-      catAccessories: "Аксессуары",
-      sortNew: "Сначала новые",
-      sortOld: "Сначала старые",
-      loading: "Загрузка...",
-      noProducts: "Товары не найдены",
-      brand: "Бренд:",
-      sizes: "Размеры:",
-      buyBtn: "Купить в Telegram"
-    },
-    en: {
-      pageTitle: "Одяг Premium Взуття",
-      searchPlaceholder: "Search by name or SKU...",
-      filterAllCats: "All Categories",
-      catClothes: "Clothes",
-      catShoes: "Shoes",
-      catAccessories: "Accessories",
-      sortNew: "Newest First",
-      sortOld: "Oldest First",
-      loading: "Loading...",
-      noProducts: "No products found",
-      brand: "Brand:",
-      sizes: "Sizes:",
-      buyBtn: "Buy via Telegram"
-    }
-  };
-
-  const savedTheme = localStorage.getItem('client_theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-
-  const savedLang = localStorage.getItem('client_lang') || 'uk';
-  document.documentElement.setAttribute('data-lang', savedLang);
-  document.getElementById('langSelect').value = savedLang;
-
-  function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('client_theme', newTheme);
-  }
-
-  function changeLanguage(lang) {
-    document.documentElement.setAttribute('data-lang', lang);
-    localStorage.setItem('client_lang', lang);
-    applyTranslations(lang);
-    renderProducts();
-  }
-
-  function applyTranslations(lang) {
-    const t = translations[lang];
-    document.getElementById('pageTitle').innerText = t.pageTitle;
-    document.getElementById('searchInput').placeholder = t.searchPlaceholder;
-    
-    // Переводим опции селектов категорий и сортировки динамически
-    document.querySelector('[value="all"]').innerText = t.filterAllCats;
-    document.querySelector('[value="clothes"]').innerText = t.catClothes;
-    document.querySelector('[value="shoes"]').innerText = t.catShoes;
-    document.querySelector('[value="accessories"]').innerText = t.catAccessories;
-    document.querySelector('[value="new"]').innerText = t.sortNew;
-    document.querySelector('[value="old"]').innerText = t.sortOld;
-  }
-
-  const SUPABASE_URL = 'https://momhpeulxtwugqgcrvjs.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vbWhwZXVseHR3dWdxZ2NydmpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NDAxMTgsImV4cCI6MjEwNTIxNjExOH0.42x9SWmfP74egl8WEgItTX2_FHeazFrofoRa2ohNSok';
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  let rawProducts = [];
-
-  async function loadProducts() {
-    try {
-      const { data, error } = await supabaseClient
-        .from('products')
-        .select('*');
-
-      if (error) throw error;
-      rawProducts = data || [];
-      renderProducts();
-    } catch (err) {
-      console.error(err);
-      document.getElementById('productsContainer').innerHTML = `<div style="grid-column:1/-1; text-align:center; color:var(--danger-color);">Помилка завантаження товарів</div>`;
-    }
-  }
-
-  function renderProducts() {
-    const lang = localStorage.getItem('client_lang') || 'uk';
-    const t = translations[lang];
-    const container = document.getElementById('productsContainer');
-    const search = document.getElementById('searchInput').value.toLowerCase();
-    const cat = document.getElementById('catFilter').value;
-    const sort = document.getElementById('sortFilter').value;
-
-    let items = rawProducts.filter(p => {
-      const title = (p.title || p.name || '').toLowerCase();
-      const sku = (p.sku || '').toLowerCase();
-      const matchText = title.includes(search) || sku.includes(search);
-      const matchCat = cat === 'all' || p.category === cat;
-      return matchText && matchCat;
-    });
-
-    if (sort === 'old') {
-      items.sort((a, b) => String(a.id).localeCompare(String(b.id)));
-    } else {
-      items.sort((a, b) => String(b.id).localeCompare(String(a.id)));
-    }
-
-    if (items.length === 0) {
-      container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">${t.noProducts}</div>`;
-      return;
-    }
-
-    container.innerHTML = '';
-    items.forEach(prod => {
-      const card = document.createElement('div');
-      card.className = 'product-card';
-
-      const title = prod.title || prod.name || 'Товар';
-      const price = prod.price || 0;
-      const imageUrl = prod.image_url || prod.image || 'https://via.placeholder.com/300';
-      const brand = prod.brand || '—';
-      const tgLink = prod.tg_link || '#';
+  <!-- Модальное окно фильтров -->
+  <div class="modal" id="filterModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="titleFilter">Фільтри товарів</span>
+        <span class="close-btn" onclick="closeFilters()">&times;</span>
+      </div>
       
-      let sizesHtml = '';
-      if (prod.sizes && Array.isArray(prod.sizes) && prod.sizes.length > 0) {
-        sizesHtml = `<div class="sizes-list">` + prod.sizes.map(s => `<span class="size-tag">${s}</span>`).join('') + `</div>`;
+      <!-- Категория -->
+      <div class="filter-section">
+        <span class="filter-label" id="secCat">Категорія:</span>
+        <select id="categorySelect" onchange="renderSizeCheckboxes()">
+          <option value="all" id="optAllCat">Усі категорії</option>
+          <option value="clothes" id="optClothes">Одяг</option>
+          <option value="shoes" id="optShoes">Взуття</option>
+          <option value="accessories" id="optAcc">Аксесуари</option>
+        </select>
+      </div>
+
+      <!-- Бренд -->
+      <div class="filter-section">
+        <span class="filter-label" id="lblBrand">Бренд:</span>
+        <select id="brandSelect">
+          <option value="all" id="optAllBrands">Усі бренди</option>
+          <option value="Nike">Nike</option>
+          <option value="Adidas">Adidas</option>
+          <option value="Puma">Puma</option>
+          <option value="Reebok">Reebok</option>
+          <option value="New Balance">New Balance</option>
+          <option value="Jordan">Jordan</option>
+          <option value="Under Armour">Under Armour</option>
+          <option value="Stone Island">Stone Island</option>
+          <option value="The North Face">The North Face</option>
+          <option value="Tommy Hilfiger">Tommy Hilfiger</option>
+          <option value="Calvin Klein">Calvin Klein</option>
+          <option value="Gucci">Gucci</option>
+          <option value="Balenciaga">Balenciaga</option>
+          <option value="Zara">Zara</option>
+          <option value="Інше">Інше</option>
+        </select>
+      </div>
+
+      <!-- Диапазон цен -->
+      <div class="filter-section">
+        <span class="filter-label" id="secPrice">Ціна:</span>
+        <div class="price-inputs">
+          <input type="number" id="priceFrom" placeholder="Від">
+          <input type="number" id="priceTo" placeholder="До">
+        </div>
+      </div>
+
+      <!-- Размеры в столбик -->
+      <div class="filter-section">
+        <span class="filter-label" id="secSize">Розміри:</span>
+        <div class="size-column-container" id="sizesColumnList">
+          <!-- Генерируется через JS -->
+        </div>
+      </div>
+
+      <!-- Сортировка -->
+      <div class="filter-section">
+        <span class="filter-label" id="lblSort">Сортування:</span>
+        <select id="sortSelect">
+          <option value="default" id="optNew">Спочатку нові</option>
+          <option value="price_asc" id="optAsc">Від дешевих до дорогих</option>
+          <option value="price_desc" id="optDesc">Від дорогих до дешевих</option>
+        </select>
+      </div>
+
+      <button class="btn-buy" id="btnApplyFilter" onclick="applyModalFilters()" style="cursor: pointer; margin-top: 5px;">Застосувати</button>
+    </div>
+  </div>
+
+  <!-- Модальное окно настроек -->
+  <div class="modal" id="settingsModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <span id="titleSettings">Налаштування сайту</span>
+        <span class="close-btn" onclick="closeSettings()">&times;</span>
+      </div>
+      
+      <div class="setting-item">
+        <span id="lblLang">Мова:</span>
+        <select id="langSelect" onchange="changeLanguage()" style="width: auto;">
+          <option value="uk">Українська</option>
+          <option value="ru">Русский</option>
+        </select>
+      </div>
+
+      <div class="setting-item">
+        <span id="lblTheme">Тема:</span>
+        <select id="themeSelect" onchange="toggleTheme()" style="width: auto;">
+          <option value="dark" id="optDark">Темна</option>
+          <option value="light" id="optLight">Світла</option>
+        </select>
+      </div>
+
+      <div class="setting-item">
+        <span id="lblCurrency">Валюта:</span>
+        <select id="currencySelect" onchange="filterAndRender()" style="width: auto;">
+          <option value="UAH">грн (UAH)</option>
+          <option value="USD">$ (USD)</option>
+        </select>
+      </div>
+
+      <button class="btn-buy" id="btnCloseSettings" onclick="closeSettings()" style="cursor: pointer;">Закрити</button>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://momhpeulxtwugqgcrvjs.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1vbWhwZXVseHR3dWdxZ2NydmpzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk2NDAxMTgsImV4cCI6MjEwNTIxNjExOH0.42x9SWmfP74egl8WEgItTX2_FHeazFrofoRa2ohNSok';
+
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let allProducts = [];
+
+    const CLOTHES_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', 'One Size'];
+    
+    const SHOE_SIZES = [
+      '35', '35.5', '36', '36.5', '37', '37.5', '38', '38.5', '39', '39.5',
+      '40', '40.5', '41', '41.5', '42', '42.5', '43', '43.5', '44', '44.5',
+      '45', '45.5', '46', '46.5'
+    ];
+
+    const translations = {
+      uk: {
+        btnFilters: '🔍 Фільтри',
+        btnSettings: '⚙️ Налаштування',
+        searchPlaceholder: 'Пошук за назвою...',
+        titleFilter: 'Фільтри товарів',
+        secCat: 'Категорія:',
+        optAllCat: 'Усі категорії',
+        optClothes: 'Одяг',
+        optShoes: 'Взуття',
+        optAcc: 'Аксесуари',
+        lblBrand: 'Бренд:',
+        optAllBrands: 'Усі бренди',
+        secPrice: 'Ціна:',
+        pFrom: 'Від',
+        pTo: 'До',
+        secSize: 'Розміри:',
+        lblSort: 'Сортування:',
+        optNew: 'Спочатку нові',
+        optAsc: 'Від дешевих до дорогих',
+        optDesc: 'Від дорогих до дешевих',
+        btnApplyFilter: 'Застосувати',
+        titleSettings: 'Налаштування сайту',
+        lblLang: 'Мова:',
+        lblTheme: 'Тема:',
+        optDark: 'Темна',
+        optLight: 'Світла',
+        lblCurrency: 'Валюта:',
+        btnCloseSettings: 'Закрити',
+        buyBtn: 'Купити в Telegram',
+        brandLbl: 'Бренд',
+        catLbl: 'Категорія',
+        emptyMsg: 'Товари не знайдені'
+      },
+      ru: {
+        btnFilters: '🔍 Фильтры',
+        btnSettings: '⚙️ Настройки',
+        searchPlaceholder: 'Поиск по названию...',
+        titleFilter: 'Фильтры товаров',
+        secCat: 'Категория:',
+        optAllCat: 'Все категории',
+        optClothes: 'Одежда',
+        optShoes: 'Обувь',
+        optAcc: 'Аксессуары',
+        lblBrand: 'Бренд:',
+        optAllBrands: 'Все бренды',
+        secPrice: 'Цена:',
+        pFrom: 'От',
+        pTo: 'До',
+        secSize: 'Размеры:',
+        lblSort: 'Сортировка:',
+        optNew: 'Сначала новые',
+        optAsc: 'От дешевых к дорогим',
+        optDesc: 'От дорогих к дешевым',
+        btnApplyFilter: 'Применить',
+        titleSettings: 'Настройки сайта',
+        lblLang: 'Язык:',
+        lblTheme: 'Тёмная',
+        optDark: 'Тёмная',
+        optLight: 'Светлая',
+        lblCurrency: 'Валюта:',
+        btnCloseSettings: 'Закрыть',
+        buyBtn: 'Купить в Telegram',
+        brandLbl: 'Бренд',
+        catLbl: 'Категория',
+        emptyMsg: 'Товары не найдены'
+      }
+    };
+
+    function renderSizeCheckboxes() {
+      const category = document.getElementById('categorySelect').value;
+      const container = document.getElementById('sizesColumnList');
+      container.innerHTML = '';
+
+      let targetSizes = [];
+      if (category === 'clothes') {
+        targetSizes = CLOTHES_SIZES;
+      } else if (category === 'shoes') {
+        targetSizes = SHOE_SIZES;
+      } else {
+        targetSizes = [...CLOTHES_SIZES, ...SHOE_SIZES];
       }
 
-      card.innerHTML = `
-        <div class="product-img-wrap">
-          <img src="${imageUrl}" class="product-img" alt="${title}">
-        </div>
-        <div class="product-content">
-          <div class="product-title">${title}</div>
-          <div class="product-info-row">${t.brand} <strong>${brand}</strong></div>
-          <div class="product-price">${price} UAH</div>
-          ${sizesHtml}
-          <a href="${tgLink}" target="_blank" class="btn-buy">${t.buyBtn}</a>
-        </div>
-      `;
-      container.appendChild(card);
-    });
-  }
+      targetSizes.forEach(size => {
+        const item = document.createElement('label');
+        item.className = 'size-column-item';
+        item.innerHTML = `
+          <input type="checkbox" value="${size}" class="size-checkbox">
+          <span>${size}</span>
+        `;
+        container.appendChild(item);
+      });
+    }
 
-  applyTranslations(savedLang);
-  loadProducts();
-</script>
+    async function loadProducts() {
+      const grid = document.getElementById('productsGrid');
+      try {
+        const { data, error } = await supabaseClient
+          .from('products')
+          .select('*')
+          .order('id', { ascending: false });
+
+        if (error) throw error;
+        allProducts = data || [];
+        renderSizeCheckboxes();
+        filterAndRender();
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = `<div class="empty-msg">Помилка завантаження: ${err.message}</div>`;
+      }
+    }
+
+    function filterAndRender() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      const category = document.getElementById('categorySelect').value;
+      const selectedBrand = document.getElementById('brandSelect').value;
+      const pFrom = parseFloat(document.getElementById('priceFrom').value) || 0;
+      const pTo = parseFloat(document.getElementById('priceTo').value) || Infinity;
+      const sort = document.getElementById('sortSelect').value;
+
+      const checkedSizes = Array.from(document.querySelectorAll('.size-checkbox:checked')).map(cb => cb.value);
+
+      let filtered = allProducts.filter(p => {
+        const matchTitle = (p.title || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search);
+        const matchCategory = category === 'all' || p.category === category;
+        const matchBrand = selectedBrand === 'all' || (p.brand || '').toLowerCase() === selectedBrand.toLowerCase();
+        
+        const price = parseFloat(p.price) || 0;
+        const matchPrice = price >= pFrom && price <= pTo;
+
+        let matchSize = true;
+        if (checkedSizes.length > 0) {
+          matchSize = p.sizes && Array.isArray(p.sizes) && checkedSizes.some(s => p.sizes.includes(s));
+        }
+
+        return matchTitle && matchCategory && matchBrand && matchPrice && matchSize;
+      });
+
+      if (sort === 'price_asc') filtered.sort((a, b) => Number(a.price) - Number(b.price));
+      if (sort === 'price_desc') filtered.sort((a, b) => Number(b.price) - Number(a.price));
+
+      renderProducts(filtered);
+    }
+
+    function renderProducts(products) {
+      const grid = document.getElementById('productsGrid');
+      const currency = document.getElementById('currencySelect').value === 'USD' ? '$' : 'грн';
+      const lang = document.getElementById('langSelect').value;
+      const t = translations[lang];
+
+      grid.innerHTML = '';
+
+      if (products.length === 0) {
+        grid.innerHTML = `<div class="empty-msg">${t.emptyMsg}</div>`;
+        return;
+      }
+
+      products.forEach(p => {
+        const sizesHtml = p.sizes && Array.isArray(p.sizes) 
+          ? p.sizes.map(s => `<span class="size-tag">${s}</span>`).join('') 
+          : '';
+
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <img src="${p.image_url || 'https://via.placeholder.com/300'}" alt="${p.title}">
+          <div class="card-body">
+            <h3 class="card-title">${p.title}</h3>
+            <div class="card-meta">${t.brandLbl}: ${p.brand || '—'} | ${t.catLbl}: ${p.category || '—'}</div>
+            <div class="card-price">${p.price} ${currency}</div>
+            ${sizesHtml ? `<div class="sizes-list">${sizesHtml}</div>` : ''}
+            <a href="${p.tg_link || '#'}" target="_blank" class="btn-buy">${t.buyBtn}</a>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function changeLanguage() {
+      const lang = document.getElementById('langSelect').value;
+      const t = translations[lang];
+
+      document.getElementById('btnFilters').innerText = t.btnFilters;
+      document.getElementById('btnSettings').innerText = t.btnSettings;
+      document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+      document.getElementById('titleFilter').innerText = t.titleFilter;
+      document.getElementById('secCat').innerText = t.secCat;
+      document.getElementById('optAllCat').innerText = t.optAllCat;
+      document.getElementById('optClothes').innerText = t.optClothes;
+      document.getElementById('optShoes').innerText = t.optShoes;
+      document.getElementById('optAcc').innerText = t.optAcc;
+      document.getElementById('lblBrand').innerText = t.lblBrand;
+      document.getElementById('optAllBrands').innerText = t.optAllBrands;
+      document.getElementById('secPrice').innerText = t.secPrice;
+      document.getElementById('priceFrom').placeholder = t.pFrom;
+      document.getElementById('priceTo').placeholder = t.pTo;
+      document.getElementById('secSize').innerText = t.secSize;
+      document.getElementById('lblSort').innerText = t.lblSort;
+      document.getElementById('optNew').innerText = t.optNew;
+      document.getElementById('optAsc').innerText = t.optAsc;
+      document.getElementById('optDesc').innerText = t.optDesc;
+      document.getElementById('btnApplyFilter').innerText = t.btnApplyFilter;
+      document.getElementById('titleSettings').innerText = t.titleSettings;
+      document.getElementById('lblLang').innerText = t.lblLang;
+      document.getElementById('lblTheme').innerText = t.lblTheme;
+      document.getElementById('optDark').innerText = t.optDark;
+      document.getElementById('optLight').innerText = t.optLight;
+      document.getElementById('lblCurrency').innerText = t.lblCurrency;
+      document.getElementById('btnCloseSettings').innerText = t.btnCloseSettings;
+
+      filterAndRender();
+    }
+
+    document.getElementById('searchInput').addEventListener('input', filterAndRender);
+
+    function openFilters() { document.getElementById('filterModal').style.display = 'flex'; }
+    function closeFilters() { document.getElementById('filterModal').style.display = 'none'; }
+    function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
+    function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+    function applyModalFilters() { filterAndRender(); closeFilters(); }
+
+    function toggleTheme() {
+      const theme = document.getElementById('themeSelect').value;
+      if (theme === 'light') {
+        document.body.classList.add('light-theme');
+      } else {
+        document.body.classList.remove('light-theme');
+      }
+    }
+
+    loadProducts();
+  </script>
 </body>
 </html>
