@@ -69,6 +69,11 @@
       outline: none;
     }
 
+    input[type="file"] {
+      padding: 8px;
+      cursor: pointer;
+    }
+
     .sizes-container {
       display: flex;
       flex-wrap: wrap;
@@ -109,6 +114,11 @@
       font-weight: bold;
       cursor: pointer;
       margin-top: 16px;
+      transition: background 0.2s;
+    }
+
+    .btn-submit:hover {
+      background-color: var(--accent-hover);
     }
 
     .product-item {
@@ -207,8 +217,8 @@
         </div>
 
         <div class="form-group">
-          <label>Ссылка на изображение (URL) *</label>
-          <input type="url" id="imageUrl" placeholder="https://..." required>
+          <label>Фото из галереи *</label>
+          <input type="file" id="imageFile" accept="image/*" required>
         </div>
 
         <div class="form-group full-width">
@@ -254,8 +264,6 @@
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   const CLOTHES_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', 'One Size'];
-  
-  // Расширенный список размеров обуви от 35 до 46.5 включительно
   const SHOE_SIZES = [
     '35', '35.5', '36', '36.5', '37', '37.5', '38', '38.5', '39', '39.5',
     '40', '40.5', '41', '41.5', '42', '42.5', '43', '43.5', '44', '44.5',
@@ -375,34 +383,66 @@
     e.preventDefault();
     const btn = document.getElementById('btnPublish');
     btn.disabled = true;
-    btn.innerText = 'Сохранение...';
+    btn.innerText = 'Загрузка картинки...';
 
-    const selectedSizes = Array.from(document.querySelectorAll('#sizesContainer input:checked')).map(cb => cb.value);
+    const fileInput = document.getElementById('imageFile');
+    const file = fileInput.files[0];
 
-    const newProduct = {
-      title: document.getElementById('title').value,
-      sku: document.getElementById('sku').value,
-      category: document.getElementById('category').value,
-      brand: document.getElementById('brand').value,
-      price: parseFloat(document.getElementById('price').value),
-      image_url: document.getElementById('imageUrl').value,
-      tg_link: document.getElementById('tgLink').value,
-      sizes: selectedSizes
-    };
+    if (!file) {
+      alert('Выберите изображение!');
+      btn.disabled = false;
+      btn.innerText = 'Опубликовать товар';
+      return;
+    }
 
     try {
-      const { error } = await supabaseClient
+      // 1. Генерируем уникальное имя файла, чтобы избежать конфликтов
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // 2. Загружаем файл в бакет products
+      btn.innerText = 'Загрузка картинки...';
+      const { error: uploadError } = await supabaseClient.storage
+        .from('products')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // 3. Получаем публичную ссылку на загруженный файл
+      const { data: publicUrlData } = supabaseClient.storage
+        .from('products')
+        .getPublicUrl(filePath);
+
+      const imageUrl = publicUrlData.publicUrl;
+
+      // 4. Сохраняем товар в базу данных
+      btn.innerText = 'Сохранение товара...';
+      const selectedSizes = Array.from(document.querySelectorAll('#sizesContainer input:checked')).map(cb => cb.value);
+
+      const newProduct = {
+        title: document.getElementById('title').value,
+        sku: document.getElementById('sku').value,
+        category: document.getElementById('category').value,
+        brand: document.getElementById('brand').value,
+        price: parseFloat(document.getElementById('price').value),
+        image_url: imageUrl,
+        tg_link: document.getElementById('tgLink').value,
+        sizes: selectedSizes
+      };
+
+      const { error: insertError } = await supabaseClient
         .from('products')
         .insert([newProduct]);
 
-      if (error) throw error;
+      if (insertError) throw insertError;
 
       alert('Товар успешно добавлен!');
       document.getElementById('addForm').reset();
       updateSizesUI();
       loadAdminProducts();
     } catch (err) {
-      alert('Ошибка при добавлении: ' + err.message);
+      alert('Ошибка: ' + err.message);
       console.error(err);
     } finally {
       btn.disabled = false;
