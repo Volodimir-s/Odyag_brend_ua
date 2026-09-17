@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,18 +12,15 @@
       --text-color: #f8fafc;
       --text-muted: #94a3b8;
       --accent-color: #38bdf8;
-      --accent-hover: #0284c7;
       --border-color: #334155;
     }
 
-    /* Светлая тема */
     body.light-theme {
       --bg-color: #f8fafc;
       --card-bg: #ffffff;
       --text-color: #0f172a;
       --text-muted: #64748b;
       --accent-color: #0284c7;
-      --accent-hover: #0369a1;
       --border-color: #e2e8f0;
     }
 
@@ -67,7 +64,6 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      transition: background-color 0.2s;
     }
 
     .btn-action:hover {
@@ -94,6 +90,7 @@
       border-radius: 8px;
       font-size: 14px;
       outline: none;
+      box-sizing: border-box;
     }
 
     input:focus, select:focus {
@@ -165,12 +162,13 @@
     .btn-buy {
       margin-top: auto;
       background-color: var(--accent-color);
-      color: #fff;
+      color: #000;
       text-decoration: none;
       text-align: center;
       padding: 10px;
       border-radius: 8px;
       font-weight: bold;
+      border: none;
     }
 
     /* Модальные окна */
@@ -229,24 +227,24 @@
   <header>
     <h1>Odyag_brend_ua</h1>
     <div class="header-btns">
-      <button class="btn-action" onclick="openFilters()">🔍 Фильтры</button>
-      <button class="btn-action" onclick="openSettings()">⚙️ Настройки</button>
+      <button class="btn-action" id="btnFilters" onclick="openFilters()">🔍 Фільтри</button>
+      <button class="btn-action" id="btnSettings" onclick="openSettings()">⚙️ Налаштування</button>
     </div>
   </header>
 
   <div class="container">
     <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="Поиск по названию..." style="flex-grow: 1;">
+      <input type="text" id="searchInput" placeholder="Пошук..." style="flex-grow: 1;">
       <select id="categorySelect">
-        <option value="all">Все категории</option>
-        <option value="clothes">Одежда</option>
-        <option value="shoes">Обувь</option>
-        <option value="accessories">Аксессуары</option>
+        <option value="all" id="optAllCat">Усі категорії</option>
+        <option value="clothes" id="optClothes">Одяг</option>
+        <option value="shoes" id="optShoes">Взуття</option>
+        <option value="accessories" id="optAcc">Аксесуари</option>
       </select>
     </div>
 
     <div class="grid" id="productsGrid">
-      <div class="empty-msg">Загрузка товаров...</div>
+      <div class="empty-msg" id="msgLoading">Завантаження...</div>
     </div>
   </div>
 
@@ -254,22 +252,22 @@
   <div class="modal" id="filterModal">
     <div class="modal-content">
       <div class="modal-header">
-        <span>Фильтры и сортировка</span>
+        <span id="titleFilter">Фільтри та сортування</span>
         <span class="close-btn" onclick="closeFilters()">&times;</span>
       </div>
       <div>
-        <label style="font-size: 12px; color: var(--text-muted);">Сортировка по цене:</label>
+        <label style="font-size: 12px; color: var(--text-muted);" id="lblSort">Сортування за ціною:</label>
         <select id="sortSelect" style="width: 100%; margin-top: 5px;">
-          <option value="default">Сначала новые</option>
-          <option value="price_asc">От дешевых к дорогим</option>
-          <option value="price_desc">От дорогих к дешевым</option>
+          <option value="default" id="optNew">Спочатку нові</option>
+          <option value="price_asc" id="optAsc">Від дешевих до дорогих</option>
+          <option value="price_desc" id="optDesc">Від дорогих до дешевих</option>
         </select>
       </div>
       <div>
-        <label style="font-size: 12px; color: var(--text-muted);">Бренд:</label>
-        <input type="text" id="brandInput" placeholder="Например: Nike, Adidas" style="width: 92%; margin-top: 5px;">
+        <label style="font-size: 12px; color: var(--text-muted);" id="lblBrand">Бренд:</label>
+        <input type="text" id="brandInput" placeholder="Nike, Adidas..." style="width: 100%; margin-top: 5px;">
       </div>
-      <button class="btn-buy" onclick="applyModalFilters()" style="cursor: pointer;">Применить</button>
+      <button class="btn-buy" id="btnApplyFilter" onclick="applyModalFilters()" style="cursor: pointer;">Застосувати</button>
     </div>
   </div>
 
@@ -277,27 +275,35 @@
   <div class="modal" id="settingsModal">
     <div class="modal-content">
       <div class="modal-header">
-        <span>Настройки сайта</span>
+        <span id="titleSettings">Налаштування сайту</span>
         <span class="close-btn" onclick="closeSettings()">&times;</span>
       </div>
       
       <div class="setting-item">
-        <span>Тема оформления:</span>
-        <select id="themeSelect" onchange="toggleTheme()">
-          <option value="dark">Тёмная</option>
-          <option value="light">Светлая</option>
+        <span id="lblLang">Мова:</span>
+        <select id="langSelect" onchange="changeLanguage()">
+          <option value="uk">Українська</option>
+          <option value="ru">Русский</option>
         </select>
       </div>
 
       <div class="setting-item">
-        <span>Валюта:</span>
+        <span id="lblTheme">Тема:</span>
+        <select id="themeSelect" onchange="toggleTheme()">
+          <option value="dark" id="optDark">Темна</option>
+          <option value="light" id="optLight">Світла</option>
+        </select>
+      </div>
+
+      <div class="setting-item">
+        <span id="lblCurrency">Валюта:</span>
         <select id="currencySelect" onchange="filterAndRender()">
           <option value="UAH">грн (UAH)</option>
           <option value="USD">$ (USD)</option>
         </select>
       </div>
 
-      <button class="btn-buy" onclick="closeSettings()" style="cursor: pointer;">Закрыть</button>
+      <button class="btn-buy" id="btnCloseSettings" onclick="closeSettings()" style="cursor: pointer;">Закрити</button>
     </div>
   </div>
 
@@ -307,6 +313,63 @@
 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     let allProducts = [];
+
+    const translations = {
+      uk: {
+        btnFilters: '🔍 Фільтри',
+        btnSettings: '⚙️ Налаштування',
+        searchPlaceholder: 'Пошук за назвою...',
+        optAllCat: 'Усі категорії',
+        optClothes: 'Одяг',
+        optShoes: 'Взуття',
+        optAcc: 'Аксесуари',
+        titleFilter: 'Фільтри та сортування',
+        lblSort: 'Сортування за ціною:',
+        optNew: 'Спочатку нові',
+        optAsc: 'Від дешевих до дорогих',
+        optDesc: 'Від дорогих до дешевих',
+        lblBrand: 'Бренд:',
+        btnApplyFilter: 'Застосувати',
+        titleSettings: 'Налаштування сайту',
+        lblLang: 'Мова:',
+        lblTheme: 'Тема:',
+        optDark: 'Темна',
+        optLight: 'Світла',
+        lblCurrency: 'Валюта:',
+        btnCloseSettings: 'Закрити',
+        buyBtn: 'Купити в Telegram',
+        brandLbl: 'Бренд',
+        catLbl: 'Категорія',
+        emptyMsg: 'Товари не знайдені'
+      },
+      ru: {
+        btnFilters: '🔍 Фильтры',
+        btnSettings: '⚙️ Настройки',
+        searchPlaceholder: 'Поиск по названию...',
+        optAllCat: 'Все категории',
+        optClothes: 'Одежда',
+        optShoes: 'Обувь',
+        optAcc: 'Аксессуары',
+        titleFilter: 'Фильтры и сортировка',
+        lblSort: 'Сортировка по цене:',
+        optNew: 'Сначала новые',
+        optAsc: 'От дешевых к дорогим',
+        optDesc: 'От дорогих к дешевым',
+        lblBrand: 'Бренд:',
+        btnApplyFilter: 'Применить',
+        titleSettings: 'Настройки сайта',
+        lblLang: 'Язык:',
+        lblTheme: 'Тема:',
+        optDark: 'Тёмная',
+        optLight: 'Светлая',
+        lblCurrency: 'Валюта:',
+        btnCloseSettings: 'Закрыть',
+        buyBtn: 'Купить в Telegram',
+        brandLbl: 'Бренд',
+        catLbl: 'Категория',
+        emptyMsg: 'Товары не найдены'
+      }
+    };
 
     async function loadProducts() {
       const grid = document.getElementById('productsGrid');
@@ -321,7 +384,7 @@
         filterAndRender();
       } catch (err) {
         console.error(err);
-        grid.innerHTML = `<div class="empty-msg">Ошибка загрузки: ${err.message}</div>`;
+        grid.innerHTML = `<div class="empty-msg">Помилка завантаження: ${err.message}</div>`;
       }
     }
 
@@ -347,10 +410,13 @@
     function renderProducts(products) {
       const grid = document.getElementById('productsGrid');
       const currency = document.getElementById('currencySelect').value === 'USD' ? '$' : 'грн';
+      const lang = document.getElementById('langSelect').value;
+      const t = translations[lang];
+
       grid.innerHTML = '';
 
       if (products.length === 0) {
-        grid.innerHTML = '<div class="empty-msg">Товары не найдены</div>';
+        grid.innerHTML = `<div class="empty-msg">${t.emptyMsg}</div>`;
         return;
       }
 
@@ -365,14 +431,43 @@
           <img src="${p.image_url || 'https://via.placeholder.com/300'}" alt="${p.title}">
           <div class="card-body">
             <h3 class="card-title">${p.title}</h3>
-            <div class="card-meta">Бренд: ${p.brand || '—'} | Категория: ${p.category || '—'}</div>
+            <div class="card-meta">${t.brandLbl}: ${p.brand || '—'} | ${t.catLbl}: ${p.category || '—'}</div>
             <div class="card-price">${p.price} ${currency}</div>
             ${sizesHtml ? `<div class="sizes-list">${sizesHtml}</div>` : ''}
-            <a href="${p.tg_link || '#'}" target="_blank" class="btn-buy">Купить в Telegram</a>
+            <a href="${p.tg_link || '#'}" target="_blank" class="btn-buy">${t.buyBtn}</a>
           </div>
         `;
         grid.appendChild(card);
       });
+    }
+
+    function changeLanguage() {
+      const lang = document.getElementById('langSelect').value;
+      const t = translations[lang];
+
+      document.getElementById('btnFilters').innerText = t.btnFilters;
+      document.getElementById('btnSettings').innerText = t.btnSettings;
+      document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+      document.getElementById('optAllCat').innerText = t.optAllCat;
+      document.getElementById('optClothes').innerText = t.optClothes;
+      document.getElementById('optShoes').innerText = t.optShoes;
+      document.getElementById('optAcc').innerText = t.optAcc;
+      document.getElementById('titleFilter').innerText = t.titleFilter;
+      document.getElementById('lblSort').innerText = t.lblSort;
+      document.getElementById('optNew').innerText = t.optNew;
+      document.getElementById('optAsc').innerText = t.optAsc;
+      document.getElementById('optDesc').innerText = t.optDesc;
+      document.getElementById('lblBrand').innerText = t.lblBrand;
+      document.getElementById('btnApplyFilter').innerText = t.btnApplyFilter;
+      document.getElementById('titleSettings').innerText = t.titleSettings;
+      document.getElementById('lblLang').innerText = t.lblLang;
+      document.getElementById('lblTheme').innerText = t.lblTheme;
+      document.getElementById('optDark').innerText = t.optDark;
+      document.getElementById('optLight').innerText = t.optLight;
+      document.getElementById('lblCurrency').innerText = t.lblCurrency;
+      document.getElementById('btnCloseSettings').innerText = t.btnCloseSettings;
+
+      filterAndRender();
     }
 
     document.getElementById('searchInput').addEventListener('input', filterAndRender);
