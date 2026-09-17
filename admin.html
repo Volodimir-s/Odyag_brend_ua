@@ -78,7 +78,7 @@
             box-sizing: border-box;
         }
 
-        /* Выбор размеров кнопками/чекбоксами */
+        /* Выбор размеров чекбоксами */
         .sizes-grid {
             display: flex;
             flex-wrap: wrap;
@@ -125,7 +125,7 @@
             opacity: 0.9;
         }
 
-        /* Таблица / Список товаров */
+        /* Список товаров */
         .product-list-item {
             display: flex;
             align-items: center;
@@ -278,11 +278,11 @@
         accessories: ['One Size', 'S/M', 'L/XL']
     };
 
-    // При изменении категории меняем подкатегории и доступные размеры
+    // Обновление подкатегорий и чекбоксов размеров
     function onCategoryChange() {
         const cat = document.getElementById('category').value;
         
-        // 1. Обновляем подкатегории
+        // 1. Подкатегории
         const subSelect = document.getElementById('subtype');
         subSelect.innerHTML = '';
         if (subtypesData[cat]) {
@@ -291,7 +291,7 @@
             });
         }
 
-        // 2. Обновляем чекбоксы размеров
+        // 2. Чекбоксы размеров
         const sizesContainer = document.getElementById('sizesContainer');
         sizesContainer.innerHTML = '';
         if (sizesData[cat]) {
@@ -304,7 +304,7 @@
         }
     }
 
-    // Показывать/скрывать поле ввода своего бренда
+    // Показ/скрытие поля ввода бренда
     function toggleCustomBrand() {
         const select = document.getElementById('brandSelect');
         const customGroup = document.getElementById('customBrandGroup');
@@ -357,7 +357,7 @@
         }
     }
 
-    // Отправка формы добавления товара
+    // Добавление нового товара
     document.getElementById('addProductForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -365,7 +365,6 @@
         submitBtn.disabled = true;
         submitBtn.innerText = 'Сохранение...';
 
-        // Собираем размеры из выбранных чекбоксов
         const checkedSizes = Array.from(document.querySelectorAll('input[name="selected_sizes"]:checked')).map(cb => cb.value);
 
         if (checkedSizes.length === 0) {
@@ -375,7 +374,6 @@
             return;
         }
 
-        // Определение бренда
         const brandSelectVal = document.getElementById('brandSelect').value;
         const finalBrand = (brandSelectVal === 'custom') 
             ? document.getElementById('customBrandInput').value.trim() 
@@ -416,7 +414,7 @@
         submitBtn.innerText = '➕ Опубликовать товар';
     });
 
-    // Инициализация стартовых данных
+    // Инициализация
     onCategoryChange();
     loadAdminProducts();
 </script>
