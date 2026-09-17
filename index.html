@@ -91,6 +91,7 @@
       font-size: 14px;
       outline: none;
       box-sizing: border-box;
+      width: 100%;
     }
 
     input:focus, select:focus {
@@ -188,10 +189,12 @@
       padding: 25px;
       border-radius: 12px;
       width: 100%;
-      max-width: 400px;
+      max-width: 420px;
       display: flex;
       flex-direction: column;
       gap: 15px;
+      max-height: 90vh;
+      overflow-y: auto;
     }
 
     .modal-header {
@@ -200,12 +203,37 @@
       align-items: center;
       font-size: 18px;
       font-weight: bold;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
     }
 
     .close-btn {
       cursor: pointer;
       font-size: 20px;
       color: var(--text-muted);
+    }
+
+    .filter-section {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-bottom: 10px;
+      border-bottom: 1px dashed var(--border-color);
+    }
+
+    .filter-section:last-of-type {
+      border-bottom: none;
+    }
+
+    .filter-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-color);
+    }
+
+    .price-inputs {
+      display: flex;
+      gap: 10px;
     }
 
     .setting-item {
@@ -234,13 +262,7 @@
 
   <div class="container">
     <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="Пошук..." style="flex-grow: 1;">
-      <select id="categorySelect">
-        <option value="all" id="optAllCat">Усі категорії</option>
-        <option value="clothes" id="optClothes">Одяг</option>
-        <option value="shoes" id="optShoes">Взуття</option>
-        <option value="accessories" id="optAcc">Аксесуари</option>
-      </select>
+      <input type="text" id="searchInput" placeholder="Пошук...">
     </div>
 
     <div class="grid" id="productsGrid">
@@ -248,26 +270,57 @@
     </div>
   </div>
 
-  <!-- Модальное окно фильтров -->
+  <!-- Модальное окно фильтров (По разделам) -->
   <div class="modal" id="filterModal">
     <div class="modal-content">
       <div class="modal-header">
-        <span id="titleFilter">Фільтри та сортування</span>
+        <span id="titleFilter">Фільтри товарів</span>
         <span class="close-btn" onclick="closeFilters()">&times;</span>
       </div>
-      <div>
-        <label style="font-size: 12px; color: var(--text-muted);" id="lblSort">Сортування за ціною:</label>
-        <select id="sortSelect" style="width: 100%; margin-top: 5px;">
+      
+      <!-- Раздел 1: Категория -->
+      <div class="filter-section">
+        <span class="filter-label" id="secCat">Категорія:</span>
+        <select id="categorySelect">
+          <option value="all" id="optAllCat">Усі категорії</option>
+          <option value="clothes" id="optClothes">Одяг</option>
+          <option value="shoes" id="optShoes">Взуття</option>
+          <option value="accessories" id="optAcc">Аксесуари</option>
+        </select>
+      </div>
+
+      <!-- Раздел 2: Бренд -->
+      <div class="filter-section">
+        <span class="filter-label" id="lblBrand">Бренд:</span>
+        <input type="text" id="brandInput" placeholder="Nike, Adidas...">
+      </div>
+
+      <!-- Раздел 3: Диапазон цен -->
+      <div class="filter-section">
+        <span class="filter-label" id="secPrice">Ціна:</span>
+        <div class="price-inputs">
+          <input type="number" id="priceFrom" placeholder="Від">
+          <input type="number" id="priceTo" placeholder="До">
+        </div>
+      </div>
+
+      <!-- Раздел 4: Размер -->
+      <div class="filter-section">
+        <span class="filter-label" id="secSize">Розмір:</span>
+        <input type="text" id="sizeInput" placeholder="S, M, L, 42...">
+      </div>
+
+      <!-- Раздел 5: Сортировка -->
+      <div class="filter-section">
+        <span class="filter-label" id="lblSort">Сортування:</span>
+        <select id="sortSelect">
           <option value="default" id="optNew">Спочатку нові</option>
           <option value="price_asc" id="optAsc">Від дешевих до дорогих</option>
           <option value="price_desc" id="optDesc">Від дорогих до дешевих</option>
         </select>
       </div>
-      <div>
-        <label style="font-size: 12px; color: var(--text-muted);" id="lblBrand">Бренд:</label>
-        <input type="text" id="brandInput" placeholder="Nike, Adidas..." style="width: 100%; margin-top: 5px;">
-      </div>
-      <button class="btn-buy" id="btnApplyFilter" onclick="applyModalFilters()" style="cursor: pointer;">Застосувати</button>
+
+      <button class="btn-buy" id="btnApplyFilter" onclick="applyModalFilters()" style="cursor: pointer; margin-top: 5px;">Застосувати</button>
     </div>
   </div>
 
@@ -281,7 +334,7 @@
       
       <div class="setting-item">
         <span id="lblLang">Мова:</span>
-        <select id="langSelect" onchange="changeLanguage()">
+        <select id="langSelect" onchange="changeLanguage()" style="width: auto;">
           <option value="uk">Українська</option>
           <option value="ru">Русский</option>
         </select>
@@ -289,7 +342,7 @@
 
       <div class="setting-item">
         <span id="lblTheme">Тема:</span>
-        <select id="themeSelect" onchange="toggleTheme()">
+        <select id="themeSelect" onchange="toggleTheme()" style="width: auto;">
           <option value="dark" id="optDark">Темна</option>
           <option value="light" id="optLight">Світла</option>
         </select>
@@ -297,7 +350,7 @@
 
       <div class="setting-item">
         <span id="lblCurrency">Валюта:</span>
-        <select id="currencySelect" onchange="filterAndRender()">
+        <select id="currencySelect" onchange="filterAndRender()" style="width: auto;">
           <option value="UAH">грн (UAH)</option>
           <option value="USD">$ (USD)</option>
         </select>
@@ -319,16 +372,21 @@
         btnFilters: '🔍 Фільтри',
         btnSettings: '⚙️ Налаштування',
         searchPlaceholder: 'Пошук за назвою...',
+        titleFilter: 'Фільтри товарів',
+        secCat: 'Категорія:',
         optAllCat: 'Усі категорії',
         optClothes: 'Одяг',
         optShoes: 'Взуття',
         optAcc: 'Аксесуари',
-        titleFilter: 'Фільтри та сортування',
-        lblSort: 'Сортування за ціною:',
+        lblBrand: 'Бренд:',
+        secPrice: 'Ціна:',
+        pFrom: 'Від',
+        pTo: 'До',
+        secSize: 'Розмір:',
+        lblSort: 'Сортування:',
         optNew: 'Спочатку нові',
         optAsc: 'Від дешевих до дорогих',
         optDesc: 'Від дорогих до дешевих',
-        lblBrand: 'Бренд:',
         btnApplyFilter: 'Застосувати',
         titleSettings: 'Налаштування сайту',
         lblLang: 'Мова:',
@@ -346,16 +404,21 @@
         btnFilters: '🔍 Фильтры',
         btnSettings: '⚙️ Настройки',
         searchPlaceholder: 'Поиск по названию...',
+        titleFilter: 'Фильтры товаров',
+        secCat: 'Категория:',
         optAllCat: 'Все категории',
         optClothes: 'Одежда',
         optShoes: 'Обувь',
         optAcc: 'Аксессуары',
-        titleFilter: 'Фильтры и сортировка',
-        lblSort: 'Сортировка по цене:',
+        lblBrand: 'Бренд:',
+        secPrice: 'Цена:',
+        pFrom: 'От',
+        pTo: 'До',
+        secSize: 'Размер:',
+        lblSort: 'Сортировка:',
         optNew: 'Сначала новые',
         optAsc: 'От дешевых к дорогим',
         optDesc: 'От дорогих к дешевым',
-        lblBrand: 'Бренд:',
         btnApplyFilter: 'Применить',
         titleSettings: 'Настройки сайта',
         lblLang: 'Язык:',
@@ -391,14 +454,23 @@
     function filterAndRender() {
       const search = document.getElementById('searchInput').value.toLowerCase();
       const category = document.getElementById('categorySelect').value;
-      const sort = document.getElementById('sortSelect').value;
       const brandFilter = document.getElementById('brandInput').value.toLowerCase();
+      const pFrom = parseFloat(document.getElementById('priceFrom').value) || 0;
+      const pTo = parseFloat(document.getElementById('priceTo').value) || Infinity;
+      const sizeFilter = document.getElementById('sizeInput').value.toLowerCase();
+      const sort = document.getElementById('sortSelect').value;
 
       let filtered = allProducts.filter(p => {
         const matchTitle = (p.title || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search);
         const matchCategory = category === 'all' || p.category === category;
         const matchBrand = !brandFilter || (p.brand || '').toLowerCase().includes(brandFilter);
-        return matchTitle && matchCategory && matchBrand;
+        
+        const price = parseFloat(p.price) || 0;
+        const matchPrice = price >= pFrom && price <= pTo;
+
+        const matchSize = !sizeFilter || (p.sizes && Array.isArray(p.sizes) && p.sizes.some(s => s.toLowerCase().includes(sizeFilter)));
+
+        return matchTitle && matchCategory && matchBrand && matchPrice && matchSize;
       });
 
       if (sort === 'price_asc') filtered.sort((a, b) => Number(a.price) - Number(b.price));
@@ -448,16 +520,21 @@
       document.getElementById('btnFilters').innerText = t.btnFilters;
       document.getElementById('btnSettings').innerText = t.btnSettings;
       document.getElementById('searchInput').placeholder = t.searchPlaceholder;
+      document.getElementById('titleFilter').innerText = t.titleFilter;
+      document.getElementById('secCat').innerText = t.secCat;
       document.getElementById('optAllCat').innerText = t.optAllCat;
       document.getElementById('optClothes').innerText = t.optClothes;
       document.getElementById('optShoes').innerText = t.optShoes;
       document.getElementById('optAcc').innerText = t.optAcc;
-      document.getElementById('titleFilter').innerText = t.titleFilter;
+      document.getElementById('lblBrand').innerText = t.lblBrand;
+      document.getElementById('secPrice').innerText = t.secPrice;
+      document.getElementById('priceFrom').placeholder = t.pFrom;
+      document.getElementById('priceTo').placeholder = t.pTo;
+      document.getElementById('secSize').innerText = t.secSize;
       document.getElementById('lblSort').innerText = t.lblSort;
       document.getElementById('optNew').innerText = t.optNew;
       document.getElementById('optAsc').innerText = t.optAsc;
       document.getElementById('optDesc').innerText = t.optDesc;
-      document.getElementById('lblBrand').innerText = t.lblBrand;
       document.getElementById('btnApplyFilter').innerText = t.btnApplyFilter;
       document.getElementById('titleSettings').innerText = t.titleSettings;
       document.getElementById('lblLang').innerText = t.lblLang;
@@ -471,7 +548,6 @@
     }
 
     document.getElementById('searchInput').addEventListener('input', filterAndRender);
-    document.getElementById('categorySelect').addEventListener('change', filterAndRender);
 
     function openFilters() { document.getElementById('filterModal').style.display = 'flex'; }
     function closeFilters() { document.getElementById('filterModal').style.display = 'none'; }
